@@ -1,4 +1,22 @@
 public class NBody {
+    public static void main(String[] args) {
+        // Initializing
+        double T = Double.parseDouble(args[0]);
+        double dt = Double.parseDouble(args[1]);
+        String filename = args[2];
+        double universeRadius = readRadius(filename);
+        Body[] bodies = readBodies(filename);
+
+        // Drawing the background
+        StdDraw.setScale(-universeRadius, universeRadius);
+        StdDraw.clear();
+        StdDraw.picture(0, 0, "images/starfield.jpg");
+
+        for (Body b : bodies) {
+            b.draw();
+        }
+    }
+
     public static double readRadius(String txtFile) {
         In in = new In(txtFile);
         int parseFirst = in.readInt();
