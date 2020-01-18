@@ -41,6 +41,13 @@ public class NBody {
             // Iterate time
             time += dt;
         }
+        StdOut.printf("%d\n", bodies.length);
+        StdOut.printf("%.2e\n", universeRadius);
+        for (int i = 0; i < bodies.length; i++) {
+            StdOut.printf("%11.4e %11.4e %11.4e %11.4e %11.4e %12s\n",
+                    bodies[i].xxPos, bodies[i].yyPos, bodies[i].xxVel,
+                    bodies[i].yyVel, bodies[i].mass, bodies[i].imgFileName);
+        }
     }
 
     public static double readRadius(String txtFile) {
