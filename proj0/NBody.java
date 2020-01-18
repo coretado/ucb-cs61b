@@ -8,29 +8,54 @@ public class NBody {
         Body[] bodies = readBodies(filename);
 
         // Drawing the background
+        StdDraw.enableDoubleBuffering();
         StdDraw.setScale(-universeRadius, universeRadius);
-        StdDraw.clear();
-        StdDraw.picture(0, 0, "images/starfield.jpg");
 
-        for (Body b : bodies) {
-            b.draw();
+        // Animating the "Universe"
+        double time = 0;
+        while (time <= T) {
+            // Instantiate arrays
+            double[] xForces = new double[5];
+            double[] yForces = new double[5];
+            // Get the xForces
+            for (int i = 0; i < 5; i++) {
+                xForces[i] = bodies[i].calcNetForceExertedByX(bodies);
+            }
+            // Get the yForces
+            for (int y = 0; y < 5; y++) {
+                yForces[y] = bodies[y].calcNetForceExertedByY(bodies);
+            }
+            // Update the positions for each body
+            for (int z = 0; z < 5; z++) {
+                bodies[z].update(dt, xForces[z], yForces[z]);
+            }
+            // Draw the background image
+            StdDraw.clear();
+            StdDraw.picture(0, 0, "images/starfield.jpg");
+            // Draw all of the bodies
+            for (Body b : bodies) {
+                b.draw();
+            }
+            StdDraw.show();
+            StdDraw.pause(10);
+            // Iterate time
+            time += dt;
         }
     }
 
     public static double readRadius(String txtFile) {
         In in = new In(txtFile);
-        int parseFirst = in.readInt();
+        in.readInt();
         return in.readDouble();
     }
 
     public static Body[] readBodies(String txtFile) {
         In in = new In(txtFile);
         Body[] bodies = new Body[5];
-        int parseFirst = in.readInt();
-        double parseSecond = in.readDouble();
-        // I'm only doing this assuming we ALWAYS read 5 rows of data
+        in.readInt();
+        in.readDouble();
         int counter = 0;
-        while (counter < 5) {
+        while (!in.isEmpty()) {
             double xxPos = in.readDouble();
             double yyPos = in.readDouble();
             double xxVel = in.readDouble();
