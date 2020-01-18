@@ -4,36 +4,39 @@ public class NBody {
         double T = Double.parseDouble(args[0]);
         double dt = Double.parseDouble(args[1]);
         String filename = args[2];
-        double universeRadius = readRadius(filename);
-        Body[] bodies = readBodies(filename);
+        double radius = readRadius(filename);
+        Planet[] planets = readBodies(filename);
 
         // Drawing the background
         StdDraw.enableDoubleBuffering();
-        StdDraw.setScale(-universeRadius, universeRadius);
+        StdDraw.setScale(-radius, radius);
+
+        // How many times to update
+        int numPlanets = planets.length;
 
         // Animating the "Universe"
         double time = 0;
         while (time <= T) {
             // Instantiate arrays
-            double[] xForces = new double[5];
-            double[] yForces = new double[5];
+            double[] xForces = new double[numPlanets];
+            double[] yForces = new double[numPlanets];
             // Get the xForces
-            for (int i = 0; i < 5; i++) {
-                xForces[i] = bodies[i].calcNetForceExertedByX(bodies);
+            for (int i = 0; i < numPlanets; i++) {
+                xForces[i] = planets[i].calcNetForceExertedByX(planets);
             }
             // Get the yForces
-            for (int y = 0; y < 5; y++) {
-                yForces[y] = bodies[y].calcNetForceExertedByY(bodies);
+            for (int y = 0; y < numPlanets; y++) {
+                yForces[y] = planets[y].calcNetForceExertedByY(planets);
             }
             // Update the positions for each body
-            for (int z = 0; z < 5; z++) {
-                bodies[z].update(dt, xForces[z], yForces[z]);
+            for (int z = 0; z < numPlanets; z++) {
+                planets[z].update(dt, xForces[z], yForces[z]);
             }
             // Draw the background image
             StdDraw.clear();
             StdDraw.picture(0, 0, "images/starfield.jpg");
-            // Draw all of the bodies
-            for (Body b : bodies) {
+            // Draw all of the planets
+            for (Planet b : planets) {
                 b.draw();
             }
             StdDraw.show();
@@ -41,12 +44,12 @@ public class NBody {
             // Iterate time
             time += dt;
         }
-        StdOut.printf("%d\n", bodies.length);
-        StdOut.printf("%.2e\n", universeRadius);
-        for (int i = 0; i < bodies.length; i++) {
+        StdOut.printf("%d\n", numPlanets);
+        StdOut.printf("%.2e\n", radius);
+        for (int i = 0; i < numPlanets; i++) {
             StdOut.printf("%11.4e %11.4e %11.4e %11.4e %11.4e %12s\n",
-                    bodies[i].xxPos, bodies[i].yyPos, bodies[i].xxVel,
-                    bodies[i].yyVel, bodies[i].mass, bodies[i].imgFileName);
+                    planets[i].xxPos, planets[i].yyPos, planets[i].xxVel,
+                    planets[i].yyVel, planets[i].mass, planets[i].imgFileName);
         }
     }
 
@@ -56,22 +59,22 @@ public class NBody {
         return in.readDouble();
     }
 
-    public static Body[] readBodies(String txtFile) {
+    public static Planet[] readBodies(String txtFile) {
         In in = new In(txtFile);
-        Body[] bodies = new Body[5];
-        in.readInt();
+        int numberOfPlanets = in.readInt();
+        Planet[] planets = new Planet[numberOfPlanets];
         in.readDouble();
         int counter = 0;
-        while (!in.isEmpty()) {
+        while (counter < numberOfPlanets) {
             double xxPos = in.readDouble();
             double yyPos = in.readDouble();
             double xxVel = in.readDouble();
             double yyVel = in.readDouble();
             double mass = in.readDouble();
             String imgFileName = in.readString();
-            bodies[counter] = new Body(xxPos, yyPos, xxVel, yyVel, mass, imgFileName);
+            planets[counter] = new Planet(xxPos, yyPos, xxVel, yyVel, mass, imgFileName);
             counter++;
         }
-        return bodies;
+        return planets;
     }
 }

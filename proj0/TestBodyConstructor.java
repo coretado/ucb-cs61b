@@ -61,7 +61,7 @@ public class TestBodyConstructor {
 
         String imgFileName = "jupiter.gif";
 
-        Body b = new Body(xxPos, yyPos, xxVel, yyVel, mass, imgFileName);
+        Planet b = new Planet(xxPos, yyPos, xxVel, yyVel, mass, imgFileName);
 
         checkEquals(xxPos, b.xxPos, "xxPos");
         checkEquals(yyPos, b.yyPos, "yyPos");
@@ -72,7 +72,7 @@ public class TestBodyConstructor {
 
         System.out.println("Checking second Body constructor...");
 
-        Body bCopy = new Body(b);
+        Planet bCopy = new Planet(b);
         checkEquals(b.xxPos, bCopy.xxPos, "xxPos");
         checkEquals(b.yyPos, bCopy.yyPos, "yyPos");
         checkEquals(b.xxVel, bCopy.xxVel, "xxVel");

@@ -54,13 +54,13 @@ public class TestCalcNetForceExertedByXY {
     private static void calcNetForceExertedByXY() {
         System.out.println("Checking calcNetForceExertedByXY...");
 
-        Body b1 = new Body(1.0, 1.0, 3.0, 4.0, 5.0, "jupiter.gif");
-        Body b2 = new Body(2.0, 1.0, 3.0, 4.0, 4e11, "jupiter.gif");
+        Planet b1 = new Planet(1.0, 1.0, 3.0, 4.0, 5.0, "jupiter.gif");
+        Planet b2 = new Planet(2.0, 1.0, 3.0, 4.0, 4e11, "jupiter.gif");
 
-        Body b3 = new Body(4.0, 5.0, 3.0, 4.0, 5.0, "jupiter.gif");
-        Body b4 = new Body(3.0, 2.0, 3.0, 4.0, 5.0, "jupiter.gif");
+        Planet b3 = new Planet(4.0, 5.0, 3.0, 4.0, 5.0, "jupiter.gif");
+        Planet b4 = new Planet(3.0, 2.0, 3.0, 4.0, 5.0, "jupiter.gif");
 
-        Body[] bodies = {b2, b3, b4};
+        Planet[] bodies = {b2, b3, b4};
 
         double xNetForce = b1.calcNetForceExertedByX(bodies);
         double yNetForce = b1.calcNetForceExertedByY(bodies);
@@ -70,7 +70,7 @@ public class TestCalcNetForceExertedByXY {
 
         System.out.println("Running test again, but with array that contains the target planet.");
 
-        bodies = new Body[]{b1, b2, b3, b4};
+        bodies = new Planet[]{b1, b2, b3, b4};
 
         xNetForce = b1.calcNetForceExertedByX(bodies);
         yNetForce = b1.calcNetForceExertedByY(bodies);

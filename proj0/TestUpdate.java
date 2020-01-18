@@ -38,7 +38,7 @@ public class TestUpdate {
     private static void checkUpdate() {
         System.out.println("Checking update...");
 
-        Body b1 = new Body(1.0, 1.0, 3.0, 4.0, 5.0, "jupiter.gif");
+        Planet b1 = new Planet(1.0, 1.0, 3.0, 4.0, 5.0, "jupiter.gif");
 
         b1.update(2.0, 1.0, -0.5);
 
