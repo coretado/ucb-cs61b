@@ -15,12 +15,26 @@ public class LinkedListDeque<Type> {
 
     /** must be constant time operation - mutative */
     public void addFirst(Type item) {
-
+        Node nn = new Node();
+        nn.value = item;
+        nn.tail = sentinel;
+        if (sentinel.head != null) {
+            Node hold = sentinel.head;
+            hold.tail = nn;
+        }
+        sentinel.head = nn;
     }
 
     /** must be constant time operation - mutative */
     public void addLast(Type item) {
-
+        Node nn = new Node();
+        nn.value = item;
+        nn.head = sentinel;
+        if (sentinel.tail != null) {
+            Node hold = sentinel.tail;
+            hold.tail = nn;
+        }
+        sentinel.tail = nn;
     }
 
     public boolean isEmpty() {
