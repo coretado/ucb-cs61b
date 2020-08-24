@@ -75,34 +75,38 @@ public class LinkedListDeque<Type> {
     }
 
     public Type removeFirst() {
-        if (sentinel.head == null)
+        if (sentinel.tail == null)
             return null;
-        Node first = sentinel.head;
         if (size == 1) {
+            Type first = sentinel.tail.value;
             sentinel.head = null;
             sentinel.tail = null;
             --size;
-            return first.value;
+            return first;
         }
-        Node hold = first.head;
-        sentinel.head = hold;
-        hold.tail = sentinel;
+        Node first = sentinel.tail;
+        Node next = first.tail;
+        sentinel.tail = next;
+        next.head = sentinel;
+        --size;
         return first.value;
     }
 
     public Type removeLast() {
-        if (sentinel.tail == null)
+        if (sentinel.head == null)
             return null;
-        Node last = sentinel.tail;
         if (size == 1) {
+            Type last = sentinel.head.value;
             sentinel.head = null;
             sentinel.tail = null;
             --size;
-            return last.value;
+            return last;
         }
-        Node hold = last.head;
-        sentinel.tail = hold;
-        hold.tail = sentinel;
+        Node last = sentinel.head;
+        Node prev = last.head;
+        sentinel.head = prev;
+        prev.tail = sentinel;
+        --size;
         return last.value;
     }
 
