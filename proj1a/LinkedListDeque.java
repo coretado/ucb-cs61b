@@ -15,26 +15,46 @@ public class LinkedListDeque<Type> {
 
     /** must be constant time operation - mutative */
     public void addFirst(Type item) {
-        Node nn = new Node();
-        nn.value = item;
-        nn.tail = sentinel;
-        if (sentinel.head != null) {
-            Node hold = sentinel.head;
-            hold.tail = nn;
+        Node add = new Node();
+        add.value = item;
+
+        if (size == 0) {
+            sentinel.head = add;
+            sentinel.tail = add;
+            add.head = sentinel;
+            add.tail = sentinel;
+            ++size;
+            return;
         }
-        sentinel.head = nn;
+
+        Node previousFirst = sentinel.tail;
+        previousFirst.head = add;
+        sentinel.tail = add;
+        add.head = sentinel;
+        add.tail = previousFirst;
+        ++size;
     }
 
     /** must be constant time operation - mutative */
     public void addLast(Type item) {
-        Node nn = new Node();
-        nn.value = item;
-        nn.head = sentinel;
-        if (sentinel.tail != null) {
-            Node hold = sentinel.tail;
-            hold.tail = nn;
+        Node last = new Node();
+        last.value = item;
+
+        if (size == 0) {
+            sentinel.head = last;
+            sentinel.tail = last;
+            last.head = sentinel;
+            last.tail = sentinel;
+            ++size;
+            return;
         }
-        sentinel.tail = nn;
+
+        Node previousLast = sentinel.head;
+        previousLast.tail = last;
+        sentinel.head = last;
+        last.head = previousLast;
+        last.tail = sentinel;
+        ++size;
     }
 
     public boolean isEmpty() {
@@ -47,19 +67,43 @@ public class LinkedListDeque<Type> {
     }
 
     public void printDeque() {
-        Node node = sentinel.head;
+        Node node = sentinel.tail;
         while (node != sentinel) {
             System.out.println(node.value + " ");
-            node = node.head;
+            node = node.tail;
         }
     }
 
     public Type removeFirst() {
-
+        if (sentinel.head == null)
+            return null;
+        Node first = sentinel.head;
+        if (size == 1) {
+            sentinel.head = null;
+            sentinel.tail = null;
+            --size;
+            return first.value;
+        }
+        Node hold = first.head;
+        sentinel.head = hold;
+        hold.tail = sentinel;
+        return first.value;
     }
 
     public Type removeLast() {
-
+        if (sentinel.tail == null)
+            return null;
+        Node last = sentinel.tail;
+        if (size == 1) {
+            sentinel.head = null;
+            sentinel.tail = null;
+            --size;
+            return last.value;
+        }
+        Node hold = last.head;
+        sentinel.tail = hold;
+        hold.tail = sentinel;
+        return last.value;
     }
 
     public Type get(int index) {
