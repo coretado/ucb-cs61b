@@ -33,7 +33,11 @@ public class LinkedListDeque<Type> {
     }
 
     public void printDeque() {
-
+        Node node = sentinel.head;
+        while (node != sentinel) {
+            System.out.println(node.value + " ");
+            node = node.head;
+        }
     }
 
     public Type removeFirst() {
@@ -45,11 +49,27 @@ public class LinkedListDeque<Type> {
     }
 
     public Type get(int index) {
-
+        if (index < 0 || index > size)
+            return null;
+        Node res = sentinel.head;
+        while (index > 0) {
+            res = res.head;
+            index--;
+        }
+        return res.value;
     }
 
     /** recursive version of get */
     public Type getRecursive(int index) {
+        if (index < 0 || index > size)
+            return null;
+        return getRecursive(index, sentinel.head);
+    }
 
+    /** private helper for getRecursive */
+    private Type getRecursive(int index, Node node) {
+        if (index > 0)
+            return getRecursive(--index, node.head);
+        return node.value;
     }
 }
