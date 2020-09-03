@@ -15,8 +15,8 @@ public class ArrayDeque<Item> {
     public ArrayDeque() {
         deque = (Item[]) new Object[8];
         size = 0;
-        nextFirst = 3;
-        nextLast = 4;
+        nextFirst = 3; // middle left
+        nextLast = 4; // middle right
     }
 
     /** Get item from Deque at given index. Return's null if that item does not exist. */
@@ -28,26 +28,30 @@ public class ArrayDeque<Item> {
     /** Adds an item at the front of the deque. Mutative. */
     public void addFirst(Item item) {
         deque[nextFirst] = item;
-        moveFirst();
+        incrementFirst();
+        size++;
     }
 
     /** Removes and returns an item from the front of the deque. Mutative. */
     public Item removeFirst() {
-        Item item = deque[nextFirst--];
+        Item item = deque[decrementFirst()];
         deque[nextFirst] = null;
+        size--;
         return item;
     }
 
     /** Adds an item to the end of the deque. Mutative. */
     public void addLast(Item item) {
         deque[nextLast] = item;
-        moveLast();
+        incrementLast();
+        size++;
     }
 
     /** Removes and returns an item from the end of the deque. Mutative. */
     public Item removeLast() {
-        Item item = deque[nextLast--];
+        Item item = deque[decrementLast()];
         deque[nextLast] = null;
+        size--;
         return item;
     }
 
@@ -70,13 +74,30 @@ public class ArrayDeque<Item> {
     }
 
     /** Moves first forward one position (visually, it moves backwards). Will handle wrap around. */
-    private void moveFirst() {
-        if (--nextFirst < 0) nextFirst = size - 1;
+    private void incrementFirst() {
+        if (--nextFirst < 0) nextFirst = minusOne(size);
     }
 
-    /** Moves last forward one position. */
-    private int moveLast() {
+    /** Moves first 'back' one position (visually, it moves forwards). Will handle wrap around. */
+    private int decrementFirst() {
+        if (++nextFirst >= deque.length) nextFirst = 0;
+        return nextFirst;
+    }
+
+    /** Moves last forward one position. Will handle wrap around. */
+    private void incrementLast() {
         if (++nextLast >= deque.length) nextLast = 0;
+    }
+
+    /** Moves last back one position. Will handle wrap around. */
+    private int decrementLast() {
+        if (--nextLast < 0) nextLast = minusOne(size);
+        return nextLast;
+    }
+
+    /** General purpose index obtain method. Will handle wrap around. */
+    private int minusOne(int val) {
+        return Math.max(val - 1, 0);
     }
 
     /** Doubles an array's size. Amortized complexity of linear. */
@@ -93,5 +114,9 @@ public class ArrayDeque<Item> {
         System.arraycopy(deque, 0, newDeque, 0, size / 4);
         size /= 2;
         deque = newDeque;
+    }
+
+    public static void main(String[] args) {
+        System.out.println("Running tests.");
     }
 }
