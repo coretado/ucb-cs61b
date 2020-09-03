@@ -27,6 +27,8 @@ public class ArrayDeque<Item> {
 
     /** Adds an item at the front of the deque. Mutative. */
     public void addFirst(Item item) {
+        if (size == deque.length)
+            resizeUp();
         deque[nextFirst] = item;
         incrementFirst();
         size++;
@@ -34,6 +36,9 @@ public class ArrayDeque<Item> {
 
     /** Removes and returns an item from the front of the deque. Mutative. */
     public Item removeFirst() {
+        if (size == 0) return null;
+        if (size == deque.length / 4 && deque.length > 8) // minimum size is 8 even if the deque is empty
+            resizeDown();
         Item item = deque[decrementFirst()];
         deque[nextFirst] = null;
         size--;
@@ -42,6 +47,8 @@ public class ArrayDeque<Item> {
 
     /** Adds an item to the end of the deque. Mutative. */
     public void addLast(Item item) {
+        if (size == deque.length)
+            resizeUp();
         deque[nextLast] = item;
         incrementLast();
         size++;
@@ -49,6 +56,9 @@ public class ArrayDeque<Item> {
 
     /** Removes and returns an item from the end of the deque. Mutative. */
     public Item removeLast() {
+        if (size == 0) return null;
+        if (size == deque.length / 4 && deque.length > 8) // minimum size is 8 even if the deque is empty
+            resizeDown();
         Item item = deque[decrementLast()];
         deque[nextLast] = null;
         size--;
@@ -67,7 +77,7 @@ public class ArrayDeque<Item> {
 
     /** Prints the deque in sequential order. */
     public void printDeque() {
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < deque.length; i++) {
             if (deque[i] != null)
                 System.out.println(deque[i]);
         }
@@ -75,7 +85,7 @@ public class ArrayDeque<Item> {
 
     /** Moves first forward one position (visually, it moves backwards). Will handle wrap around. */
     private void incrementFirst() {
-        if (--nextFirst < 0) nextFirst = minusOne(size);
+        if (--nextFirst < 0) nextFirst = deque.length - 1;
     }
 
     /** Moves first 'back' one position (visually, it moves forwards). Will handle wrap around. */
@@ -91,7 +101,7 @@ public class ArrayDeque<Item> {
 
     /** Moves last back one position. Will handle wrap around. */
     private int decrementLast() {
-        if (--nextLast < 0) nextLast = minusOne(size);
+        if (--nextLast < 0) nextLast = deque.length - 1;
         return nextLast;
     }
 
@@ -102,21 +112,42 @@ public class ArrayDeque<Item> {
 
     /** Doubles an array's size. Amortized complexity of linear. */
     private void resizeUp() {
-        Item[] newDeque = (Item[]) new Object[size * 2];
-        System.arraycopy(deque, 0, newDeque, 0, size);
+        int currentSize = deque.length;
+        Item[] newDeque = (Item[]) new Object[currentSize * 2];
+        System.arraycopy(deque, 0, newDeque, currentSize / 2, currentSize);
+
+        setPointersAndDeque(currentSize, newDeque);
         size *= 2;
-        deque = newDeque;
     }
 
     /** Reduces an array's size by half. This is called when an Array is 1/4 full to prevent thrashing */
     private void resizeDown() {
-        Item[] newDeque = (Item[]) new Object[size / 2];
-        System.arraycopy(deque, 0, newDeque, 0, size / 4);
+        int currentSize = deque.length;
+        Item[] newDeque = (Item[]) new Object[currentSize / 2];
+        System.arraycopy(deque, Math.min(minusOne(nextFirst), minusOne(nextLast)), newDeque, currentSize / 8, currentSize / 4);
+
+        setPointersAndDeque(currentSize, newDeque);
         size /= 2;
+    }
+
+    /** set new pointers and new deque */
+    private void setPointersAndDeque(int cs, Item[] newDeque) {
+        nextFirst = (cs / 2) - 1;
+        nextLast = (cs / 2) * 3;
         deque = newDeque;
     }
 
     public static void main(String[] args) {
         System.out.println("Running tests.");
+        ArrayDeque<Integer> arrayDeque = new ArrayDeque<>();
+        for (int i = 0; i < 24; i++) {
+            if (i % 2 == 0) arrayDeque.addFirst(i);
+            else arrayDeque.addLast(i);
+        }
+        System.out.println("Array Deque");
+        arrayDeque.printDeque();
+        System.out.println("Next First and Next Last");
+        System.out.println(arrayDeque.nextFirst);
+        System.out.println(arrayDeque.nextLast);
     }
 }
