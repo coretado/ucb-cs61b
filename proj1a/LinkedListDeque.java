@@ -1,3 +1,10 @@
+/**
+ * @author jspii
+ */
+
+/**
+ * A Deque implementation using a double linked list with sentinel nodes
+ */
 public class LinkedListDeque<Type> {
     private int size;
     private Node sentinel;
