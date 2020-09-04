@@ -110,30 +110,33 @@ public class ArrayDeque<Item> {
         return Math.max(val - 1, 0);
     }
 
+    /** General purpose index obtain method. Will handle wrap around. */
+    private int plusOne(int val) {
+        return val + 1 >= deque.length ? 0 : val + 1;
+    }
+
     /** Doubles an array's size. Amortized complexity of linear. */
     private void resizeUp() {
         int currentSize = deque.length;
         Item[] newDeque = (Item[]) new Object[currentSize * 2];
         System.arraycopy(deque, 0, newDeque, currentSize / 2, currentSize);
 
-        setPointersAndDeque(currentSize, newDeque);
-        size *= 2;
+        setPointersAndDeque(currentSize * 2, newDeque);
     }
 
     /** Reduces an array's size by half. This is called when an Array is 1/4 full to prevent thrashing */
     private void resizeDown() {
         int currentSize = deque.length;
         Item[] newDeque = (Item[]) new Object[currentSize / 2];
-        System.arraycopy(deque, Math.min(minusOne(nextFirst), minusOne(nextLast)), newDeque, currentSize / 8, currentSize / 4);
+        System.arraycopy(deque, Math.min(plusOne(nextFirst), minusOne(nextLast)), newDeque, currentSize / 8, currentSize / 4);
 
-        setPointersAndDeque(currentSize, newDeque);
-        size /= 2;
+        setPointersAndDeque(currentSize / 2, newDeque);
     }
 
     /** set new pointers and new deque */
     private void setPointersAndDeque(int cs, Item[] newDeque) {
-        nextFirst = (cs / 2) - 1;
-        nextLast = (cs / 2) * 3;
+        nextFirst = (cs / 4) - 1;
+        nextLast = (cs / 4) * 3;
         deque = newDeque;
     }
 
@@ -144,10 +147,16 @@ public class ArrayDeque<Item> {
             if (i % 2 == 0) arrayDeque.addFirst(i);
             else arrayDeque.addLast(i);
         }
-        System.out.println("Array Deque");
-        arrayDeque.printDeque();
         System.out.println("Next First and Next Last");
         System.out.println(arrayDeque.nextFirst);
         System.out.println(arrayDeque.nextLast);
+        for (int i = 0; i < 24; i++) {
+            if (i % 2 == 0) arrayDeque.removeFirst();
+            else arrayDeque.removeLast();
+        }
+        System.out.println("Next First and Next Last");
+        System.out.println(arrayDeque.nextFirst);
+        System.out.println(arrayDeque.nextLast);
+        System.out.println(arrayDeque.removeFirst());
     }
 }
