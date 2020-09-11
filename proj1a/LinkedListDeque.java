@@ -5,12 +5,12 @@
 /**
  * A Deque implementation using a double linked list with sentinel nodes
  */
-public class LinkedListDeque<Type> {
+public class LinkedListDeque<T> {
     private int size;
     private Node sentinel;
 
     private class Node {
-        Type value;
+        T value;
         Node head;
         Node tail;
     }
@@ -21,7 +21,7 @@ public class LinkedListDeque<Type> {
     }
 
     /** must be constant time operation - mutative */
-    public void addFirst(Type item) {
+    public void addFirst(T item) {
         Node add = new Node();
         add.value = item;
 
@@ -43,7 +43,7 @@ public class LinkedListDeque<Type> {
     }
 
     /** must be constant time operation - mutative */
-    public void addLast(Type item) {
+    public void addLast(T item) {
         Node last = new Node();
         last.value = item;
 
@@ -81,11 +81,12 @@ public class LinkedListDeque<Type> {
         }
     }
 
-    public Type removeFirst() {
-        if (sentinel.tail == null)
+    public T removeFirst() {
+        if (sentinel.tail == null) {
             return null;
+        }
         if (size == 1) {
-            Type first = sentinel.tail.value;
+            T first = sentinel.tail.value;
             sentinel.head = null;
             sentinel.tail = null;
             --size;
@@ -99,11 +100,12 @@ public class LinkedListDeque<Type> {
         return first.value;
     }
 
-    public Type removeLast() {
-        if (sentinel.head == null)
+    public T removeLast() {
+        if (sentinel.head == null) {
             return null;
+        }
         if (size == 1) {
-            Type last = sentinel.head.value;
+            T last = sentinel.head.value;
             sentinel.head = null;
             sentinel.tail = null;
             --size;
@@ -117,28 +119,31 @@ public class LinkedListDeque<Type> {
         return last.value;
     }
 
-    public Type get(int index) {
-        if (index < 0 || index > size)
+    public T get(int index) {
+        if (index < 0 || index > size) {
             return null;
-        Node res = sentinel.head;
+        }
+        Node res = sentinel.tail;
         while (index > 0) {
-            res = res.head;
+            res = res.tail;
             index--;
         }
         return res.value;
     }
 
     /** recursive version of get */
-    public Type getRecursive(int index) {
-        if (index < 0 || index > size)
+    public T getRecursive(int index) {
+        if (index < 0 || index > size) {
             return null;
-        return getRecursive(index, sentinel.head);
+        }
+        return getRecursive(index, sentinel.tail);
     }
 
     /** private helper for getRecursive */
-    private Type getRecursive(int index, Node node) {
-        if (index > 0)
-            return getRecursive(--index, node.head);
+    private T getRecursive(int index, Node node) {
+        if (index > 0) {
+            return getRecursive(--index, node.tail);
+        }
         return node.value;
     }
 }
