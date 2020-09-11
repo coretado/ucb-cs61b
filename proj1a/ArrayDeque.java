@@ -68,7 +68,7 @@ public class ArrayDeque<T> {
             return null;
         }
         // minimum size is 8 even if the deque is empty
-        if (size == deque.length / 4 && deque.length > 8){
+        if (size == deque.length / 4 && deque.length > 8) {
             resizeDown();
         }
         T item = deque[decrementLast()];
@@ -100,7 +100,9 @@ public class ArrayDeque<T> {
      * Will handle wrap around.
      */
     private void incrementFirst() {
-        if (--nextFirst < 0) nextFirst = deque.length - 1;
+        if (--nextFirst < 0) {
+            nextFirst = deque.length - 1;
+        }
     }
 
     /** Moves first 'back' one position (visually, it moves forwards).
@@ -168,31 +170,5 @@ public class ArrayDeque<T> {
         nextFirst = (cs / 4) - 1;
         nextLast = (cs / 4) * 3;
         deque = newDeque;
-    }
-
-    public static void main(String[] args) {
-        System.out.println("Running tests.");
-        ArrayDeque<Integer> arrayDeque = new ArrayDeque<>();
-        for (int i = 0; i < 24; i++) {
-            if (i % 2 == 0) {
-                arrayDeque.addFirst(i);
-            }
-            else arrayDeque.addLast(i);
-        }
-        System.out.println("Next First and Next Last");
-        System.out.println(arrayDeque.nextFirst);
-        System.out.println(arrayDeque.nextLast);
-        for (int i = 0; i < 24; i++) {
-            if (i % 2 == 0) {
-                arrayDeque.removeFirst();
-            }
-            else {
-                arrayDeque.removeLast();
-            }
-        }
-        System.out.println("Next First and Next Last");
-        System.out.println(arrayDeque.nextFirst);
-        System.out.println(arrayDeque.nextLast);
-        System.out.println(arrayDeque.removeFirst());
     }
 }
