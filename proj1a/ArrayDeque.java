@@ -130,19 +130,4 @@ public class ArrayDeque<T> {
     private int plusOne(int val) {
         return val + 1 >= deque.length ? 0 : val + 1;
     }
-
-    public static void main(String[] args) {
-        ArrayDeque<Integer> deque = new ArrayDeque<>();
-        for (int i = 0; i < 24; i++) {
-            if (i % 2 == 0) deque.addFirst(i);
-            else deque.addLast(i);
-        }
-        deque.printDeque();
-        for (int i = 0; i < 24; i++) {
-            if (i % 2 == 0) System.out.println(deque.removeFirst());
-            else System.out.println(deque.removeLast());
-        }
-        System.out.println(deque.size());
-        System.out.println(deque.isEmpty());
-    }
 }
