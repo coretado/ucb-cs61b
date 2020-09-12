@@ -75,6 +75,7 @@ public class LinkedListDeque<T> {
 
     public void printDeque() {
         Node node = sentinel.tail;
+
         while (node != sentinel) {
             System.out.println(node.value + " ");
             node = node.tail;
@@ -85,6 +86,7 @@ public class LinkedListDeque<T> {
         if (sentinel.tail == null) {
             return null;
         }
+
         if (size == 1) {
             T first = sentinel.tail.value;
             sentinel.head = null;
@@ -92,11 +94,13 @@ public class LinkedListDeque<T> {
             --size;
             return first;
         }
+
         Node first = sentinel.tail;
         Node next = first.tail;
         sentinel.tail = next;
         next.head = sentinel;
         --size;
+
         return first.value;
     }
 
@@ -104,6 +108,7 @@ public class LinkedListDeque<T> {
         if (sentinel.head == null) {
             return null;
         }
+
         if (size == 1) {
             T last = sentinel.head.value;
             sentinel.head = null;
@@ -111,11 +116,13 @@ public class LinkedListDeque<T> {
             --size;
             return last;
         }
+
         Node last = sentinel.head;
         Node prev = last.head;
         sentinel.head = prev;
         prev.tail = sentinel;
         --size;
+
         return last.value;
     }
 
@@ -123,11 +130,14 @@ public class LinkedListDeque<T> {
         if (index < 0 || index > size) {
             return null;
         }
+
         Node res = sentinel.tail;
+
         while (index > 0) {
             res = res.tail;
             index--;
         }
+
         return res.value;
     }
 
@@ -136,6 +146,7 @@ public class LinkedListDeque<T> {
         if (index < 0 || index > size) {
             return null;
         }
+
         return getRecursive(index, sentinel.tail);
     }
 
@@ -144,6 +155,7 @@ public class LinkedListDeque<T> {
         if (index > 0) {
             return getRecursive(--index, node.tail);
         }
+
         return node.value;
     }
 }
