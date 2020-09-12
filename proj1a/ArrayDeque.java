@@ -14,7 +14,7 @@ public class ArrayDeque<T> {
     public ArrayDeque() {
         size = 0;
         deque = (T[]) new Object[8];
-        nextFirst = 0;
+        nextFirst = 7;
         nextLast = 0;
     }
 
@@ -46,6 +46,7 @@ public class ArrayDeque<T> {
                 System.out.print(deque[i] + " ");
             }
         }
+        System.out.println("");
     }
 
     public T removeFirst() {
@@ -77,31 +78,31 @@ public class ArrayDeque<T> {
     }
 
     private int incrementNextFirst() {
-        int hold = (minusOne(nextLast) - size + deque.length) % deque.length;
+        int hold = nextFirst;
         nextFirst = minusOne(nextFirst);
         size++;
         return hold;
     }
 
     private int incrementNextLast() {
-        int hold = (plusOne(nextFirst) + size) % deque.length;
+        int hold = nextLast;
         nextLast = plusOne(nextLast);
         size++;
         return hold;
     }
 
     private int decrementNextFirst() {
-        int hold = (minusOne(nextLast) - size + deque.length) % deque.length;
+        int hold = plusOne(nextFirst);
         nextFirst = plusOne(nextFirst);
         size--;
-        return plusOne(hold + 1);
+        return hold;
     }
 
     private int decrementNextLast() {
-        int hold = (plusOne(nextFirst) + size) % deque.length;
+        int hold = minusOne(nextLast);
         nextLast = minusOne(nextLast);
         size--;
-        return minusOne(hold - 1);
+        return hold;
     }
 
     private void resizeUp() {
@@ -128,5 +129,20 @@ public class ArrayDeque<T> {
 
     private int plusOne(int val) {
         return val + 1 >= deque.length ? 0 : val + 1;
+    }
+
+    public static void main(String[] args) {
+        ArrayDeque<Integer> deque = new ArrayDeque<>();
+        for (int i = 0; i < 24; i++) {
+            if (i % 2 == 0) deque.addFirst(i);
+            else deque.addLast(i);
+        }
+        deque.printDeque();
+        for (int i = 0; i < 24; i++) {
+            if (i % 2 == 0) System.out.println(deque.removeFirst());
+            else System.out.println(deque.removeLast());
+        }
+        System.out.println(deque.size());
+        System.out.println(deque.isEmpty());
     }
 }
