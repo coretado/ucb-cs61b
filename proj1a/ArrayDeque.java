@@ -14,8 +14,8 @@ public class ArrayDeque<T> {
     public ArrayDeque() {
         size = 0;
         deque = (T[]) new Object[8];
-        nextFirst = 7;
-        nextLast = 0;
+        nextFirst = 0;
+        nextLast = 1;
     }
 
     public void addFirst(T item) {
@@ -53,7 +53,7 @@ public class ArrayDeque<T> {
         if (size == 0) {
             return null;
         }
-        if (size == deque.length / 4 && deque.length > 8) {
+        if ((float) size / deque.length <= 0.25 && deque.length > 8) {
             resizeDown();
         }
         return deque[decrementNextFirst()];
@@ -63,7 +63,7 @@ public class ArrayDeque<T> {
         if (size == 0) {
             return null;
         }
-        if (size == deque.length / 4 && deque.length > 8) {
+        if ((float) size / deque.length <= 0.25 && deque.length > 8) {
             resizeDown();
         }
         return deque[decrementNextLast()];
@@ -92,17 +92,15 @@ public class ArrayDeque<T> {
     }
 
     private int decrementNextFirst() {
-        int hold = plusOne(nextFirst);
         nextFirst = plusOne(nextFirst);
         size--;
-        return hold;
+        return nextFirst;
     }
 
     private int decrementNextLast() {
-        int hold = minusOne(nextLast);
         nextLast = minusOne(nextLast);
         size--;
-        return hold;
+        return nextLast;
     }
 
     private void resizeUp() {
