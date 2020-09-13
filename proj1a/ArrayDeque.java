@@ -14,22 +14,26 @@ public class ArrayDeque<T> {
     public ArrayDeque() {
         size = 0;
         deque = (T[]) new Object[8];
-        nextFirst = 0;
-        nextLast = 1;
+        nextFirst = 7;
+        nextLast = 0;
     }
 
     public void addFirst(T item) {
         if (size == deque.length) {
             resizeUp();
         }
-        deque[incrementNextFirst()] = item;
+        deque[nextFirst] = item;
+        nextFirst = minusOne(nextFirst);
+        size++;
     }
 
     public void addLast(T item) {
         if (size == deque.length) {
             resizeUp();
         }
-        deque[incrementNextLast()] = item;
+        deque[nextLast] = item;
+        nextLast = plusOne(nextLast);
+        size++;
     }
 
     public boolean isEmpty() {
@@ -56,7 +60,10 @@ public class ArrayDeque<T> {
         if ((float) size / deque.length <= 0.25 && deque.length > 8) {
             resizeDown();
         }
-        return deque[decrementNextFirst()];
+        int hold = decrementNextFirst();
+        T res = deque[hold];
+        deque[hold] = null;
+        return res;
     }
 
     public T removeLast() {
@@ -66,7 +73,10 @@ public class ArrayDeque<T> {
         if ((float) size / deque.length <= 0.25 && deque.length > 8) {
             resizeDown();
         }
-        return deque[decrementNextLast()];
+        int hold = decrementNextLast();
+        T res = deque[hold];
+        deque[hold] = null;
+        return res;
     }
 
     public T get(int index) {
@@ -74,21 +84,7 @@ public class ArrayDeque<T> {
             return null;
         }
 
-        return deque[index];
-    }
-
-    private int incrementNextFirst() {
-        int hold = nextFirst;
-        nextFirst = minusOne(nextFirst);
-        size++;
-        return hold;
-    }
-
-    private int incrementNextLast() {
-        int hold = nextLast;
-        nextLast = plusOne(nextLast);
-        size++;
-        return hold;
+        return deque[(plusOne(nextFirst) + index) % deque.length];
     }
 
     private int decrementNextFirst() {
