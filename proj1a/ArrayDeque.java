@@ -14,8 +14,8 @@ public class ArrayDeque<T> {
     public ArrayDeque() {
         size = 0;
         deque = (T[]) new Object[8];
-        nextFirst = 7;
-        nextLast = 0;
+        nextFirst = 0;
+        nextLast = 1;
     }
 
     public void addFirst(T item) {
