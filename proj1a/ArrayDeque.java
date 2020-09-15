@@ -60,9 +60,10 @@ public class ArrayDeque<T> {
         if ((float) size / deque.length <= 0.25 && deque.length > 8) {
             resizeDown();
         }
-        int hold = decrementNextFirst();
-        T res = deque[hold];
-        deque[hold] = null;
+        nextFirst = plusOne(nextFirst);
+        T res = deque[nextFirst];
+        deque[nextFirst] = null;
+        size--;
         return res;
     }
 
@@ -73,47 +74,34 @@ public class ArrayDeque<T> {
         if ((float) size / deque.length <= 0.25 && deque.length > 8) {
             resizeDown();
         }
-        int hold = decrementNextLast();
-        T res = deque[hold];
-        deque[hold] = null;
+        nextLast = minusOne(nextLast);
+        T res = deque[nextLast];
+        deque[nextLast] = null;
+        size--;
         return res;
     }
 
     public T get(int index) {
-        if (index < 0 || index >= deque.length) {
+        if (index < 0 || index > deque.length - 1) {
             return null;
         }
 
-        return deque[(plusOne(nextFirst) + index) % deque.length];
-    }
-
-    private int decrementNextFirst() {
-        nextFirst = plusOne(nextFirst);
-        size--;
-        return nextFirst;
-    }
-
-    private int decrementNextLast() {
-        nextLast = minusOne(nextLast);
-        size--;
-        return nextLast;
+        return deque[(nextFirst + 1 + index) % deque.length];
     }
 
     private void resizeUp() {
         T[] newDeque = (T[]) new Object[deque.length * 2];
-        System.arraycopy(deque, 0, newDeque, 0, size);
+        System.arraycopy(deque, 0, newDeque, 1, size);
         deque = newDeque;
-        nextFirst = newDeque.length - 1;
+        nextFirst = 0;
         nextLast = size;
     }
 
     private void resizeDown() {
         T[] newDeque = (T[]) new Object[deque.length / 2];
-        int lnf = (minusOne(nextLast) - size + deque.length) % deque.length;
-        int lnl = (plusOne(nextFirst) + size) % deque.length;
-        System.arraycopy(deque, Integer.min(minusOne(lnl), plusOne(lnf)), newDeque, 0, size);
+        System.arraycopy(deque, Integer.min(minusOne(nextLast), plusOne(nextFirst)), newDeque, 1, size);
         deque = newDeque;
-        nextFirst = newDeque.length - 1;
+        nextFirst = 0;
         nextLast = size;
     }
 
@@ -122,6 +110,6 @@ public class ArrayDeque<T> {
     }
 
     private int plusOne(int val) {
-        return val + 1 >= deque.length ? 0 : val + 1;
+        return val + 1 > deque.length - 1 ? 0 : val + 1;
     }
 }
