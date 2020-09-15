@@ -90,8 +90,12 @@ public class ArrayDeque<T> {
     }
 
     private void resizeUp() {
-        T[] newDeque = (T[]) new Object[deque.length * 2];
-        System.arraycopy(deque, 0, newDeque, 0, size);
+        int length = deque.length;
+        T[] newDeque = (T[]) new Object[length * 2];
+        int start = plusOne(nextFirst);
+        for (int i = 0; i < size; i++) {
+            newDeque[i] = deque[(start + i) % length];
+        }
         deque = newDeque;
         nextFirst = deque.length - 1;
         nextLast = size;
