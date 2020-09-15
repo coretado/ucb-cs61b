@@ -14,8 +14,8 @@ public class ArrayDeque<T> {
     public ArrayDeque() {
         size = 0;
         deque = (T[]) new Object[8];
-        nextFirst = 0;
-        nextLast = 1;
+        nextFirst = 7;
+        nextLast = 0;
     }
 
     public void addFirst(T item) {
@@ -91,17 +91,28 @@ public class ArrayDeque<T> {
 
     private void resizeUp() {
         T[] newDeque = (T[]) new Object[deque.length * 2];
-        System.arraycopy(deque, 0, newDeque, 1, size);
+        System.arraycopy(deque, 0, newDeque, 0, size);
         deque = newDeque;
-        nextFirst = 0;
+        nextFirst = deque.length - 1;
         nextLast = size;
     }
 
     private void resizeDown() {
-        T[] newDeque = (T[]) new Object[deque.length / 2];
-        System.arraycopy(deque, Integer.min(minusOne(nextLast), plusOne(nextFirst)), newDeque, 1, size);
+        int length = deque.length;
+        T[] newDeque = (T[]) new Object[length / 2];
+        if (Math.abs(minusOne(nextLast) - plusOne(nextFirst)) > size) {
+            int start = Math.max(minusOne(nextLast), plusOne(nextFirst));
+            for (int i = 0; i < size; i++) {
+                newDeque[i] = deque[(start + i) % length];
+            }
+        } else {
+            System.arraycopy(deque,
+                    Integer.min(
+                            minusOne(nextLast), plusOne(nextFirst)),
+                    newDeque, 0, size);
+        }
         deque = newDeque;
-        nextFirst = 0;
+        nextFirst = deque.length - 1;
         nextLast = size;
     }
 
