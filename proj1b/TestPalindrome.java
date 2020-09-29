@@ -22,7 +22,7 @@ public class TestPalindrome {
     }
 
     @Test
-    public void testOnePalindrome() {
+    public void testOneCharacterPalindrome() {
         assertTrue(palindrome.isPalindrome("a"));
     }
 
@@ -34,5 +34,28 @@ public class TestPalindrome {
         assertFalse(palindrome.isPalindrome("Racecar"));
         assertFalse(palindrome.isPalindrome("entry"));
         assertFalse(palindrome.isPalindrome("petrichor"));
+    }
+
+    @Test
+    public void testEmptyOffByOnePalindrome() {
+        CharacterComparator offByOne = new OffByOne();
+        assertTrue(palindrome.isPalindrome("", offByOne));
+    }
+
+    @Test
+    public void testOneCharacterOffByOnePalindrome() {
+        CharacterComparator offByOne = new OffByOne();
+        assertTrue(palindrome.isPalindrome("a", offByOne));
+    }
+
+    @Test
+    public void testVariousOffByOneWords() {
+        CharacterComparator offByOne = new OffByOne();
+        assertFalse(palindrome.isPalindrome(null, offByOne));
+        assertTrue(palindrome.isPalindrome("flake", offByOne));
+        assertTrue(palindrome.isPalindrome("qabecbr", offByOne));
+        assertFalse(palindrome.isPalindrome("qacecaR", offByOne));
+        assertFalse(palindrome.isPalindrome("Dntry", offByOne));
+        assertFalse(palindrome.isPalindrome("qetrichos"));
     }
 }
