@@ -1,5 +1,4 @@
 public interface Deque<T> {
-    /** Returns if a Deque is empty */
     public boolean isEmpty();
 
     /** Returns the number of elements in the Deque */
