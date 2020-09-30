@@ -21,8 +21,7 @@ public class Palindrome {
     private boolean isPalindromeHelper(String word, Deque<Character> load) {
         if (word.length() < 2) {
             return true;
-        }
-        else {
+        } else {
             if (!load.removeLast().equals(word.charAt(0))) {
                 return false;
             }
@@ -33,8 +32,7 @@ public class Palindrome {
     private boolean isPalindromeHelper(String word, Deque<Character> load, CharacterComparator cc) {
         if (word.length() < 2) {
             return true;
-        }
-        else {
+        } else {
             if (!cc.equalChars(load.removeLast(), word.charAt(0))) {
                 return false;
             }
