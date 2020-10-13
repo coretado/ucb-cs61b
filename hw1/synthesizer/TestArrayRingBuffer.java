@@ -8,8 +8,31 @@ import static org.junit.Assert.*;
 
 public class TestArrayRingBuffer {
     @Test
-    public void someTest() {
-        //ArrayRingBuffer arb = new ArrayRingBuffer(10);
+    public void testLoadAndUnload() {
+        ArrayRingBuffer<Integer> arb = new ArrayRingBuffer<>(8);
+        assertEquals(arb.capacity, 8);
+        assertEquals(arb.fillCount, 0);
+
+        for (int i = 0; i < 8; i += 1) {
+            arb.enqueue(i);
+        }
+        assertEquals(arb.fillCount, 8);
+
+        for (int i = 0; i < 8; i += 1) {
+            assertEquals((int) arb.peek(), i);
+            assertEquals((int) arb.dequeue(), i);
+        }
+
+        // testing if wrap around worked correctly
+        for (int i = 0; i < 8; i += 1) {
+            arb.enqueue(i);
+        }
+        assertEquals(arb.fillCount, 8);
+
+        for (int i = 0; i < 8; i += 1) {
+            assertEquals((int) arb.peek(), i);
+            assertEquals((int) arb.dequeue(), i);
+        }
     }
 
     /** Calls tests for ArrayRingBuffer. */
