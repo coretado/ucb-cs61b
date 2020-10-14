@@ -3,6 +3,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class TestArrayRingBuffer {
+    private static final String OVERFLOW_MESSAGE = "Ring Buffer Overflow";
+    private static final String UNDERFLOW_MESSAGE = "Ring Buffer Underflow";
+
     @Test
     public void testLoadAndUnload() {
         ArrayRingBuffer<Integer> arb = new ArrayRingBuffer<>(8);
@@ -28,6 +31,39 @@ public class TestArrayRingBuffer {
         for (int i = 0; i < 8; i += 1) {
             assertEquals((int) arb.peek(), i);
             assertEquals((int) arb.dequeue(), i);
+        }
+    }
+
+    @Test
+    public void testOverflowException() {
+        ArrayRingBuffer<Integer> arb = new ArrayRingBuffer<>(10);
+        for (int i = 0; i < 10; i += 1) {
+            arb.enqueue(i);
+        }
+        assertEquals(arb.fillCount(), 10);
+        assertEquals((int) arb.peek(), 0);
+        try {
+            arb.enqueue(10);
+        } catch (RuntimeException e) {
+            assertEquals(e.getClass(), RuntimeException.class);
+            assertEquals(e.getMessage(), OVERFLOW_MESSAGE);
+        }
+    }
+
+    @Test
+    public void testUnderflowException() {
+        ArrayRingBuffer<Integer> arb = new ArrayRingBuffer<>(10);
+        for (int i = 0; i < 10; i += 1) {
+            arb.enqueue(i);
+        }
+        for (int i = 0; i < 10; i += 1) {
+            assertEquals((int) arb.dequeue(), i);
+        }
+        try {
+            arb.dequeue();
+        } catch (RuntimeException e) {
+            assertEquals(e.getClass(), RuntimeException.class);
+            assertEquals(e.getMessage(), UNDERFLOW_MESSAGE);
         }
     }
 
