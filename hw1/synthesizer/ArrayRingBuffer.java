@@ -1,5 +1,3 @@
-// TODO: Make sure to make this class a part of the synthesizer package
-// package <package name>;
 package synthesizer;
 
 import java.util.Iterator;
@@ -52,7 +50,6 @@ public class ArrayRingBuffer<T> extends AbstractBoundedQueue<T> {
         first = incrementHelper(first);
         this.fillCount--;
         return peekaboo;
-        // TODO: Dequeue the first item. Don't forget to decrease fillCount and update 
     }
 
     /**
