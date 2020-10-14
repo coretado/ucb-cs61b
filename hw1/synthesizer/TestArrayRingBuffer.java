@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 public class TestArrayRingBuffer {
     private static final String OVERFLOW_MESSAGE = "Ring Buffer Overflow";
     private static final String UNDERFLOW_MESSAGE = "Ring Buffer Underflow";
+    private static final String EMPTY_MESSAGE = "Ring Buffer Empty";
 
     @Test
     public void testLoadAndUnload() {
@@ -64,6 +65,22 @@ public class TestArrayRingBuffer {
         } catch (RuntimeException e) {
             assertEquals(e.getClass(), RuntimeException.class);
             assertEquals(e.getMessage(), UNDERFLOW_MESSAGE);
+        }
+    }
+
+    @Test
+    public void testPeekException() {
+        ArrayRingBuffer<Integer> arb = new ArrayRingBuffer<>(10);
+        assertEquals(arb.fillCount(), 0);
+        arb.enqueue(1);
+        assertEquals(arb.fillCount(), 1);
+        assertEquals((int) arb.peek(), 1);
+        assertEquals((int) arb.dequeue(), 1);
+        try {
+            arb.peek();
+        } catch (RuntimeException e) {
+            assertEquals(e.getClass(), RuntimeException.class);
+            assertEquals(e.getMessage(), EMPTY_MESSAGE);
         }
     }
 
