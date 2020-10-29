@@ -15,26 +15,39 @@ import java.util.Random;
 public class HexWorld {
     private static final int WIDTH = 50;
     private static final int HEIGHT = 50;
-    private final TETile[][] world = new TETile[WIDTH][HEIGHT];
-    private final TERenderer ter = new TERenderer();
-    private final int size;
 
-    public HexWorld(int size) {
-        this.size = size;
-        ter.initialize(WIDTH, HEIGHT);
-        for (int x = 0; x < WIDTH; x += 1) {
-            for (int y = 0; y < HEIGHT; y += 1) {
-                world[x][y] = Tileset.NOTHING;
-            }
+    public HexWorld() {}
+
+    /**
+     * The idea is that this Coordinate is used to represent the upper left corner of a
+     * 'box' in space that houses a Hexagon
+     */
+    private static class Coordinate {
+        private int x;
+        private int y;
+        public Coordinate(int x, int y) {
+            this.x = x;
+            this.y = y;
         }
     }
 
-    public void addHexagon(int posx, int posy, int size) {
-
+    /**
+     * Function accepts a starting coordinate to iterate through the height from top to bottom
+     * and construct a Hexagon using the printLine helper
+     */
+    public void addHexagon(Coordinate coor, int size, TETile tileType, TETile[][] world) {
+        int[] rows = hexHelper(size);
+        int totalHeight = size * 2;
+        int max = calcMax(size);
+        int startHeight = coor.y;
+        for (int h = coor.y; h < coor.y + totalHeight; h += 1) {
+            printLine(max - rows[h], rows[h], startHeight, tileType, world);
+            startHeight += 1;
+        }
     }
 
     /* accepts number to print and number to skip? */
-    private void printLine(int b, int s, int h, TETile tileType) {
+    private void printLine(int b, int s, int h, TETile tileType, TETile[][] world) {
         for (int i = 0; i < s + b; i += 1) {
             if (i < b) {
                 continue;
@@ -45,7 +58,8 @@ public class HexWorld {
 
     @Test
     public void testPrintLine() {
-        TETile[][] world = new TETile[4][4];
+        int size = 4;
+        TETile[][] world = new TETile[size][size];
         for (int x = 0; x < 4; x += 1) {
             for (int y = 0; y < 4; y += 1) {
                 world[x][y] = Tileset.NOTHING;
@@ -54,13 +68,13 @@ public class HexWorld {
         int max = calcMax(2);
         int[] rows = hexHelper(2);
         for (int h = 0; h < 4; h += 1) {
-            printLine(max - rows[h], rows[h], h, Tileset.GRASS);
+            printLine(max - rows[h], rows[h], h, Tileset.GRASS, world);
         }
         for (int h = 0; h < 4; h += 1) {
             int buffer = max - rows[h];
-            int actual = buffer + rows[h];
-            for (int x = 0; x < actual; x += 1) {
+            for (int x = 0; x < size; x += 1) {
                 if (x < buffer) {
+                    assertEquals(world[x][h], Tileset.NOTHING);
                     continue;
                 }
                 assertEquals(world[x][h], Tileset.GRASS);
@@ -113,5 +127,16 @@ public class HexWorld {
     }
 
     public static void main(String[] args) {
+        TERenderer ter = new TERenderer();
+        ter.initialize(WIDTH, HEIGHT);
+        TETile[][] world = new TETile[WIDTH][HEIGHT];
+        for (int x = 0; x < WIDTH; x += 1) {
+            for (int y = 0; y < HEIGHT; y += 1) {
+                world[x][y] = Tileset.NOTHING;
+            }
+        }
+        HexWorld hexWorld = new HexWorld();
+        hexWorld.addHexagon(new Coordinate(0, 0), 2, Tileset.GRASS, world);
+        ter.renderFrame(world);
     }
 }
