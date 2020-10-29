@@ -19,7 +19,7 @@ public class HexWorld {
     public HexWorld() {}
 
     /**
-     * The idea is that this Coordinate is used to represent the upper left corner of a
+     * The idea is that this Coordinate is used to represent the bottom left corner of a
      * 'box' in space that houses a Hexagon
      */
     private static class Coordinate {
@@ -41,7 +41,7 @@ public class HexWorld {
         int max = calcMax(size);
         int startHeight = coor.y;
         for (int h = coor.y; h < coor.y + totalHeight; h += 1) {
-            printLine(max - rows[h], rows[h], startHeight, tileType, world);
+            printLine((max - rows[h]) / 2, rows[h], startHeight, tileType, world);
             startHeight += 1;
         }
     }
@@ -68,11 +68,11 @@ public class HexWorld {
         int max = calcMax(2);
         int[] rows = hexHelper(2);
         for (int h = 0; h < 4; h += 1) {
-            printLine(max - rows[h], rows[h], h, Tileset.GRASS, world);
+            printLine((max - rows[h]) / 2, rows[h], h, Tileset.GRASS, world);
         }
         for (int h = 0; h < 4; h += 1) {
-            int buffer = max - rows[h];
-            for (int x = 0; x < size; x += 1) {
+            int buffer = (max - rows[h]) / 2;
+            for (int x = 0; x < (size - buffer); x += 1) {
                 if (x < buffer) {
                     assertEquals(world[x][h], Tileset.NOTHING);
                     continue;
@@ -136,7 +136,7 @@ public class HexWorld {
             }
         }
         HexWorld hexWorld = new HexWorld();
-        hexWorld.addHexagon(new Coordinate(0, 0), 2, Tileset.GRASS, world);
+        hexWorld.addHexagon(new Coordinate(0, 0), 3, Tileset.GRASS, world);
         ter.renderFrame(world);
     }
 }
