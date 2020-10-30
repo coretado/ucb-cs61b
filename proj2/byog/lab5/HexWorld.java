@@ -182,7 +182,7 @@ public class HexWorld {
                     dynamicWidth = calcMax(size) + (2 * size) + size;
                 }
 
-                dynamicWidth = 0;
+                dynamicWidth = 1;
                 dynamicHeight += size;
             } else {
                 for (int i = 1; i < 4; i += 1) {
@@ -215,8 +215,6 @@ public class HexWorld {
             }
         }
         HexWorld hexWorld = new HexWorld();
-//        hexWorld.addHexagon(new Coordinate(0, 0), 3, Tileset.GRASS, world);
-//        ter.renderFrame(world);
         hexWorld.generate19Hex(4, world);
         ter.renderFrame(world);
     }
