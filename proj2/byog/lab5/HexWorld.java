@@ -6,7 +6,9 @@ import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.Random;
 
 /**
@@ -15,6 +17,7 @@ import java.util.Random;
 public class HexWorld {
     private static final int WIDTH = 50;
     private static final int HEIGHT = 50;
+    private static final Random RANDOM = new Random();
 
     public HexWorld() {}
 
@@ -40,19 +43,20 @@ public class HexWorld {
         int totalHeight = size * 2;
         int max = calcMax(size);
         int startHeight = coor.y;
-        for (int h = coor.y; h < coor.y + totalHeight; h += 1) {
-            printLine((max - rows[h]) / 2, rows[h], startHeight, tileType, world);
+        for (int h = 0; h < totalHeight; h += 1) {
+            printLine((max - rows[h]) / 2, rows[h], coor.x, startHeight, tileType, world);
             startHeight += 1;
         }
     }
 
     /* accepts number to print and number to skip? */
-    private void printLine(int b, int s, int h, TETile tileType, TETile[][] world) {
+    private void printLine(int b, int s, int x, int h, TETile tileType, TETile[][] world) {
         for (int i = 0; i < s + b; i += 1) {
             if (i < b) {
                 continue;
             }
-            world[i][h] = tileType;
+            world[(x + b)][h] = tileType;
+            x += 1;
         }
     }
 
@@ -68,7 +72,7 @@ public class HexWorld {
         int max = calcMax(2);
         int[] rows = hexHelper(2);
         for (int h = 0; h < 4; h += 1) {
-            printLine((max - rows[h]) / 2, rows[h], h, Tileset.GRASS, world);
+            printLine((max - rows[h]) / 2, rows[h], 0, h, Tileset.GRASS, world);
         }
         for (int h = 0; h < 4; h += 1) {
             int buffer = (max - rows[h]) / 2;
@@ -126,6 +130,81 @@ public class HexWorld {
         assertArrayEquals(h4, new int[]{5, 7, 9, 11, 13, 13, 11, 9, 7, 5});
     }
 
+    private TETile randomTileSet() {
+        int tileNum = RANDOM.nextInt(5);
+        switch (tileNum) {
+            case 0: return Tileset.TREE;
+            case 1: return Tileset.FLOWER;
+            case 2: return Tileset.GRASS;
+            case 3: return Tileset.SAND;
+            case 4: return Tileset.MOUNTAIN;
+            default: return Tileset.MOUNTAIN;
+        }
+    }
+
+    /**
+     * This code has a bit of hard coding in it, but that is because the expectation is to just do a
+     * 19 hex world; I'm sure you could make it more dynamic, but I will just figure this out then move
+     * on to Project 2.
+     *
+     * Representation of 19Hex:
+     *                 19
+     *             17      18
+     *         14      15      16
+     *             12      13
+     *         9       10      11
+     *              7       8
+     *         4        5       6
+     *              2       3
+     *                  1
+     */
+    private void generate19Hex(int s, TETile[][] world) {
+        Deque<Coordinate> hex19 = makeRowsDeque(s);
+        while (!hex19.isEmpty()) {
+            addHexagon(hex19.removeFirst(), s, randomTileSet(), world);
+        }
+    }
+
+    private Deque<Coordinate> makeRowsDeque(int size) {
+        int dynamicHeight = 0;
+        int dynamicWidth = calculateMidCluster(size);
+        Deque<Coordinate> hex19 = new ArrayDeque<>();
+
+        hex19.addFirst(new Coordinate(dynamicWidth, dynamicHeight));
+
+        dynamicWidth = 2 * size;
+        dynamicHeight += size;
+
+        for (int builder = 1; builder < 8; builder += 1) {
+            if (builder % 2 != 0) {
+                for (int i = 0; i < 2; i += 1) {
+                    hex19.addFirst(new Coordinate(dynamicWidth, dynamicHeight));
+                    dynamicWidth = calcMax(size) + (2 * size) + size;
+                }
+
+                dynamicWidth = 0;
+                dynamicHeight += size;
+            } else {
+                for (int i = 1; i < 4; i += 1) {
+                    hex19.addFirst(new Coordinate(dynamicWidth, dynamicHeight));
+                    dynamicWidth = ( (i * calcMax(size)) + (i * size) + 1 );
+                }
+
+                dynamicWidth = 2 * size;
+                dynamicHeight += size;
+            }
+        }
+
+        dynamicWidth = calculateMidCluster(size);
+        hex19.addFirst(new Coordinate(dynamicWidth, dynamicHeight));
+
+        return hex19;
+    }
+
+    private int calculateMidCluster(int s) {
+        return calcMax(s) + s + 1;
+    }
+
     public static void main(String[] args) {
         TERenderer ter = new TERenderer();
         ter.initialize(WIDTH, HEIGHT);
@@ -136,7 +215,9 @@ public class HexWorld {
             }
         }
         HexWorld hexWorld = new HexWorld();
-        hexWorld.addHexagon(new Coordinate(0, 0), 3, Tileset.GRASS, world);
+//        hexWorld.addHexagon(new Coordinate(0, 0), 3, Tileset.GRASS, world);
+//        ter.renderFrame(world);
+        hexWorld.generate19Hex(4, world);
         ter.renderFrame(world);
     }
 }
