@@ -1,8 +1,5 @@
 package byog.Core;
 
-import byog.TileEngine.TETile;
-import byog.TileEngine.Tileset;
-
 import java.util.Random;
 
 /**
@@ -12,34 +9,22 @@ public class SeedGenerator {
     private static Random seedGen;
 
     public SeedGenerator(Long seed) {
-        this.seedGen = new Random(seed);
+        seedGen = new Random(seed);
     }
 
-    /** guaranteed to at least return a value of 1 */
-    public static int genNumber(int value) {
-        int seedVal = seedGen.nextInt(value);
-        return Math.max(1, seedVal);
-    }
-
-    /** guaranteed to at least return a value of 3 for cellular automata room construction */
-    public static int genDimensionNumber(int value) {
+    /** guaranteed to at least return a value of 3 for rectangular/square room construction */
+    public static int genDimension(int value) {
         int seedVal = seedGen.nextInt(value);
         return Math.max(3, seedVal);
     }
 
-    /** return a value between 0-99; 0-14 spawns a corridor */
-    public static int genCorridorPercentage() {
-        int seedVal = seedGen.nextInt(100);
-        return seedVal;
+    public static int genOrigin(int value) {
+        return seedGen.nextInt(value);
     }
 
-    /** generate tiles to be used */
-    public TETile genTile() {
-        int tile = seedGen.nextInt(100);
-        if (tile < 55) {
-            return Tileset.FLOOR;
-        } else {
-            return Tileset.WALL;
-        }
+    /** randomly generate a corridor at a 30% clip */
+    public static boolean generateCorridor() {
+        int seedVal = seedGen.nextInt(100);
+        return seedVal < 30;
     }
 }
