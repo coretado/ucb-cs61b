@@ -30,7 +30,7 @@ public class SeedGenerator {
     /** return a value between 0-99; 0-14 spawns a corridor */
     public static int genCorridorPercentage() {
         int seedVal = seedGen.nextInt(100);
-        return Math.max(1, seedVal);
+        return seedVal;
     }
 
     /** generate tiles to be used */

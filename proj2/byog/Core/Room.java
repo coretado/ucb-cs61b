@@ -2,7 +2,6 @@ package byog.Core;
 
 import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
-import edu.princeton.cs.algs4.ST;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +11,7 @@ public class Room {
     private static final int ROOM_WIDTH = 8;
     private static final int ROOM_HEIGHT = 8;
 
-    private Map<String, Coordinate> blob;
+    private Map<Integer, Coordinate> blob;
     private Coordinate origin;
     private SeedGenerator seedGen;
     private TETile[][] internalGrid;
@@ -43,7 +42,20 @@ public class Room {
         for (int smooth = 0; smooth < 5; smooth += 1) {
             smoothCA();
         }
-        // TODO - DFS to find largest blob that was made
+        // DFS to find largest blob that was made
+        for (int x = 0; x < width; x += 1) {
+            for (int y = 0; y < height; y += 1) {
+                int instance = generateKey(x, y);
+                if (internalGrid[x][y].character() != '#' && !blob.containsKey(instance)) {
+                    checkBlob(instance, x, y);
+                }
+            }
+        }
+        // TODO - Add a corridor at a 15% rate to a generated room
+        if (seedGen.genCorridorPercentage() < 15) {
+            generateCorridor();
+        }
+        // TODO - Alter Room's internal dimensions to slide over main grid
     }
 
     /**
@@ -132,10 +144,44 @@ public class Room {
         return inc % height;
     }
 
+    private void checkBlob(int instance, int x, int y) {
+        if (blob.containsKey(instance)) {
+            return;
+        }
+        Map<Integer, Coordinate> tempBlob = new HashMap<>();
+        fill(tempBlob, x, y);
+        if (tempBlob.size() > blob.size()) {
+            blob = tempBlob;
+        }
+    }
+
     /**
      * DFS recursive function to determine the largest blob created by CA
      */
-    private void fill() {
-        // TODO - implement
+    private void fill(Map<Integer, Coordinate> tempBlob, int x, int y) {
+        if (
+                x >= width || x < 0 ||
+                y >= height || y < 0 ||
+                tempBlob.containsKey(generateKey(x, y)) ||
+                internalGrid[x][y].character() == '#'
+        ) {
+            return;
+        }
+        tempBlob.put(generateKey(x, y), new Coordinate(x, y));
+        fill(tempBlob, x - 1, y);
+        fill(tempBlob, x, y - 1);
+        fill(tempBlob, x + 1, y);
+        fill(tempBlob, x, y + 1);
+    }
+
+    /** returns unique integer key based on two coordinates */
+    private int generateKey(int x, int y) {
+        return x + (y * height);
+    }
+
+    /** generates a random length corridor bounded by 3 */
+    private void generateCorridor() {
+        int corridorLength = seedGen.genDimensionNumber(8);
+        
     }
 }
