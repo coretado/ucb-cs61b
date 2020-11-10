@@ -27,4 +27,13 @@ public class SeedGenerator {
         int seedVal = seedGen.nextInt(100);
         return seedVal < 30;
     }
+
+    /** 50/50 odds (for determining if a corridor will be vertical or horizontal) */
+    public static boolean coinflip() {
+        return seedGen.nextInt(1) == 0;
+    }
+
+    public static int boundByOneAndInput(int input) {
+        return 1 + seedGen.nextInt(input);
+    }
 }
