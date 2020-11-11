@@ -49,15 +49,15 @@ public class Room {
         this.doors = doors;
     }
 
-    public Coordinate[] getDoors() {
-        return this.doors;
+    public Coordinate getDoor(int doorKey) {
+        return this.doors[doorKey];
+    }
+
+    public Coordinate getAssignedDoor() {
+        return this.doors[this.doorKey];
     }
 
     public void setDoorKey(int key) {
         this.doorKey = key;
-    }
-
-    public Coordinate getDoorCoordinate() {
-        return this.doors[this.doorKey];
     }
 }
