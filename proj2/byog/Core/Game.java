@@ -3,13 +3,11 @@ package byog.Core;
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
 
-import java.util.Queue;
-
 public class Game {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
-    public static final int WIDTH = 80;
-    public static final int HEIGHT = 80;
+    public static final int WIDTH = 50;
+    public static final int HEIGHT = 50;
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
@@ -46,5 +44,19 @@ public class Game {
         WorldGenerator worldGenerator = new WorldGenerator(WIDTH, HEIGHT, Long.parseLong(seedString.toString()));
         worldGenerator.generateWorld();
         return worldGenerator.getGrid();
+    }
+
+    public static void main(String[] args) {
+        Game game = new Game();
+        TETile[][] world = game.playWithInputString("123456");
+        game.ter.initialize(WIDTH, HEIGHT);
+        for (int i = 0; i < 50; i += 1) {
+            for (int y = 0; y < 50; y += 1) {
+                if (world[i][y].character() == '#' || world[i][y].character() == '·') {
+                    System.out.println("at coor (" + i + ", " + y + ") : " + world[i][y].character());
+                }
+            }
+        }
+        game.ter.renderFrame(world);
     }
 }

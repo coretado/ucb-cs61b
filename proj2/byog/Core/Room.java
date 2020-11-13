@@ -1,24 +1,22 @@
 package byog.Core;
 import byog.Core.WorldGenerator.RectType;
 
-/**
- * This class will either return a rectangular room or a single width hallway,
- * The values used for the random generation of the dimensions of a Room can be found
- * in SeedGenerator.java.
- */
 public class Room {
-    private final int width;
-    private final int height;
+    private final int cols;
+    private final int rows;
     private int doorKey;
-    private final RectType rectType;
     public Coordinate origin;
-    // 0 = up, 1 = right, 2 = down, 3 = left
+    // for debugging purposes
+    private final RectType rectType;
+    // 0 = top, 1 = right, 2 = down, 3 = left
     private Coordinate[] doors;
+    private boolean[] doorWasAssignedRoom;
 
-    public Room(int width, int height, RectType rectType) {
-        this.width = width + 2;
-        this.height = height + 2;
+    public Room(int cols, int rows, RectType rectType) {
+        this.cols = cols + 2;
+        this.rows = rows + 2;
         this.rectType = rectType;
+        this.doorWasAssignedRoom = new boolean[]{false, false, false, false};
     }
 
     public void setOrigin(Coordinate origin) {
@@ -29,20 +27,32 @@ public class Room {
         return this.origin;
     }
 
-    public RectType getRectType() {
-        return this.rectType;
-    }
-
     public int roomSize() {
-        return width * height;
+        return cols * rows;
     }
 
-    public int getWidth() {
-        return this.width;
+    public int getCols() {
+        return this.cols;
     }
 
-    public int getHeight() {
-        return this.height;
+    public int getAdjustedWidth() {
+        return this.cols - 1;
+    }
+
+    public int getInnerCols() {
+        return this.cols - 2;
+    }
+
+    public int getRows() {
+        return this.rows;
+    }
+
+    public int getAdjustedHeight() {
+        return this.rows - 1;
+    }
+
+    public int getInnerRows() {
+        return this.rows - 2;
     }
 
     public void setDoors(Coordinate[] doors) {
@@ -57,7 +67,4 @@ public class Room {
         return this.doors[this.doorKey];
     }
 
-    public void setDoorKey(int key) {
-        this.doorKey = key;
-    }
 }
