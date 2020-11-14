@@ -1,19 +1,19 @@
 package byog.Core;
 
 public class Coordinate {
-    private int x;
-    private int y;
+    private final int col;
+    private final int row;
 
-    public Coordinate(int x, int y) {
-        this.x = x;
-        this.y = y;
+    public Coordinate(int col, int row) {
+        this.col = col;
+        this.row = row;
     }
 
-    public int getX() {
-        return this.x;
+    public int getCol() {
+        return this.col;
     }
 
-    public int getY() {
-        return this.y;
+    public int getRow() {
+        return this.row;
     }
 }

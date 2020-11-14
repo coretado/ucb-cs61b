@@ -8,8 +8,8 @@ import java.util.Deque;
 import java.util.Random;
 
 public class WorldGenerator {
-    private final int ROOM_WIDTH = 7;
-    private final int ROOM_HEIGHT = 7;
+    private final int ROOM_WIDTH = 6;
+    private final int ROOM_HEIGHT = 6;
 
     public enum RectType {
         ROOM,
@@ -30,8 +30,8 @@ public class WorldGenerator {
         this.seedGen = new Random(seed);
 
         // generate empty world
-        for (int col = 0; col < columns; col += 1) {
-            for (int row = 0; row < rows; row += 1) {
+        for (int row = 0; row < rows; row += 1) {
+            for (int col = 0; col < columns; col += 1) {
                 this.grid[col][row] = Tileset.NOTHING;
             }
         }
@@ -155,19 +155,17 @@ public class WorldGenerator {
         this.registerRoom(first);
 
         // generate add on rooms and corridors
-        while (!hitCapacity()) {
+        while (!this.hitCapacity()) {
             // new room
-            Room potentialRoom = this.generateRoom();
+            Room candidate = this.generateRoom();
 
-            // iterate through all rooms and see if you can place the new room
-
-            // will naturally terminate the loop if there is no valid room connection
-            for (Room toCheck : this.rooms) {
-                int doorKey = this.checkConnectRoom(potentialRoom, toCheck);
-                if (doorKey != -1) {
-                    potentialRoom.setDoorKey(doorKey);
-                    potentialRoom.setOrigin(mapOriginFromPotentialDoor(doorKey, potentialRoom, toCheck));
-                    this.registerRoom(potentialRoom);
+            // check rooms for a valid connection
+            for (Room existing : this.rooms) {
+                System.out.println("AH INFINITE LOOP");
+                boolean wasAbleToConnectToDoorInToCheckRoom =
+                        this.checkAndSetOriginToPotentialRoomIfValid(candidate, existing);
+                if (wasAbleToConnectToDoorInToCheckRoom) {
+                    this.registerRoom(candidate);
                     break;
                 }
             }
@@ -184,8 +182,8 @@ public class WorldGenerator {
     /** 0 = top, 1 = right, 2 = down, 3 = left */
     private void generateDoors(Room room) {
         Coordinate[] doors = new Coordinate[4];
-        doors[0] = new Coordinate(this.genDoorDimension(room.getCols()), room.getAdjustedHeight());
-        doors[1] = new Coordinate(room.getAdjustedWidth(), this.genDimension(room.getRows()));
+        doors[0] = new Coordinate(this.genDoorDimension(room.getCols()), room.getRows());
+        doors[1] = new Coordinate(room.getCols(), this.genDimension(room.getRows()));
         doors[2] = new Coordinate(this.genDoorDimension(room.getCols()), 0);
         doors[3] = new Coordinate(0, this.genDimension(room.getRows()));
         room.setDoors(doors);
@@ -195,11 +193,11 @@ public class WorldGenerator {
      * with attaching to each other) - will check to see if any of the rooms coordinates are out of bounds
      */
     private boolean coreRoomCanBePlacedOntoGrid(Coordinate origin, Room room) {
-        int mappedWidth = origin.getX() + room.getCols();
-        int mappedHeight = origin.getY() + room.getRows();
-        for (int x = origin.getX(); x < mappedWidth; x += 1) {
-            for (int y = origin.getY(); y < mappedHeight; y += 1) {
-                if (this.coordinateOutOfBounds(x, y)) {
+        int mappedCols = origin.getCol() + room.getCols();
+        int mappedRows = origin.getRow() + room.getRows();
+        for (int row = origin.getRow(); row < mappedRows; row += 1) {
+            for (int col = origin.getCol(); col < mappedCols; col += 1) {
+                if (this.coordinateOutOfBounds(col, row)) {
                     return false;
                 }
             }
@@ -220,14 +218,14 @@ public class WorldGenerator {
      *  Paints in floor tiles in the interior of a room (minus the wall padding)
      */
     private void addFloorTilesToRoom(Room room) {
-        int innerRows = room.getInnerRows();
-        int innerCols = room.getInnerCols();
-        int floorStartCol = room.getOrigin().getX() + 1;
-        int floorStartRow = room.getOrigin().getY() + 1;
+        int col = room.getOrigin().getCol() + 1;
+        int row = room.getOrigin().getRow() + 1;
+        int colLength = col + room.getInnerCols();
+        int rowLength = row + room.getInnerRows();
 
-        for (int col = 0; col < innerCols; col += 1) {
-            for (int row = 0; row < innerRows; row += 1) {
-                this.grid[floorStartCol + col][floorStartRow + row] = Tileset.FLOOR;
+        for ( ; row < rowLength; row += 1) {
+            for ( ; col < colLength; col += 1) {
+                this.grid[col][row] = Tileset.FLOOR;
             }
         }
     }
@@ -235,73 +233,109 @@ public class WorldGenerator {
     /** End Room Generation Helpers */
 
     /** will check all of the doors of some registeredRoom room and return the doorKey of a valid connection if it exists */
-    private int checkConnectRoom(Room newRoom, Room registeredRoom) {
-        int key = -1;
+    private boolean checkAndSetOriginToPotentialRoomIfValid(Room candidate, Room existing) {
+        Coordinate potentialCandidateOrigin = null;
         for (int i = 0; i < 4; i += 1) {
-            if (!this.invalidConnection(i, newRoom, registeredRoom)) {
-                key = i;
+            // if this room already has another room assigned to this door, continue
+            if (existing.doorPositionAssigned(i)) {
+                continue;
+            }
+
+            // this room does not have another room assigned to this door
+            potentialCandidateOrigin = mapCandidateOriginFromExistingDoor(i, candidate, existing);
+
+            // if there was no potentialCandidateOrigin, this door is not a connection candidate
+            if (potentialCandidateOrigin != null) {
+                existing.assignDoorPositionWithRoom(i);
                 break;
             }
         }
-        return key;
-    }
 
-    /** helper function for checkConnectRoom() that checks whether or not two rooms have a valid connection */
-    private boolean invalidConnection(int doorKey, Room newRoom, Room registeredRoom) {
-        Coordinate potentialNewRoomOrigin = this.mapOriginFromPotentialDoor(doorKey, newRoom, registeredRoom);
-        if (potentialNewRoomOrigin == null) {
+        if (potentialCandidateOrigin == null) {
+            return false;
+        } else {
+            candidate.setOrigin(potentialCandidateOrigin);
             return true;
         }
-        return this.invalidPlacement(registeredRoom, newRoom, potentialNewRoomOrigin);
     }
 
     /** will take the coordinates of a shifted door and subtract  */
-    private Coordinate mapOriginFromPotentialDoor(int doorKey, Room newRoom, Room registeredRoom) {
-        Coordinate base = registeredRoom.getDoor(doorKey);
-        Coordinate shifted;
+    private Coordinate mapCandidateOriginFromExistingDoor(int doorKey, Room candidate, Room existing) {
+        Coordinate doorCoordinateFromExisting = existing.getDoor(doorKey);
+        Coordinate mappedCoordinate;
+
         switch (doorKey) {
             case 0:
-                shifted = new Coordinate(base.getX(), base.getY() + 1);
+                mappedCoordinate = new Coordinate(
+                        doorCoordinateFromExisting.getCol() + existing.getOrigin().getCol(),
+                        doorCoordinateFromExisting.getRow() + existing.getOrigin().getRow() + 1
+                );
                 break;
             case 1:
-                shifted = new Coordinate(base.getX() + 1, base.getY());
+                mappedCoordinate = new Coordinate(
+                        doorCoordinateFromExisting.getCol() + existing.getOrigin().getCol() + 1,
+                        doorCoordinateFromExisting.getRow() + existing.getOrigin().getRow()
+                );
                 break;
             case 2:
-                shifted = new Coordinate(base.getX(), base.getY() - 1);
+                mappedCoordinate = new Coordinate(
+                        doorCoordinateFromExisting.getCol() + existing.getOrigin().getCol(),
+                        doorCoordinateFromExisting.getRow() + existing.getOrigin().getRow() - 1
+                );
                 break;
             default:
-                shifted = new Coordinate(base.getX() - 1, base.getY());
+                mappedCoordinate = new Coordinate(
+                        doorCoordinateFromExisting.getCol() + existing.getOrigin().getCol() - 1,
+                        doorCoordinateFromExisting.getRow() + existing.getOrigin().getRow()
+                );
                 break;
         }
-        Coordinate actualDoorCoordinate = newRoom.getDoor(doorKey);
-        Coordinate potentialNewRoomOrigin = new Coordinate(
-        shifted.getX() - actualDoorCoordinate.getX(), shifted.getY() - actualDoorCoordinate.getY());
-        if (this.coordinateOutOfBounds(potentialNewRoomOrigin.getX(), potentialNewRoomOrigin.getY())) {
-            return null;
+
+        Coordinate candidateDoorCoordinate = null;
+
+        for (int i = 0; i < 4; i += 1) {
+            Coordinate candidateConnectionCoordinate = candidate.getDoor(i);
+
+            // logic here is that if you take one additional step in the doorKey direction, that is where
+            // the candidate room door coordinate is going to lie, which means if you then subtract the
+            // candidate room door coordinate by the door coordinates you should get it's origin relative to the parent
+            Coordinate potentialNewRoomOrigin = new Coordinate(
+                    mappedCoordinate.getCol() - candidateConnectionCoordinate.getCol(),
+                    mappedCoordinate.getRow() - candidateConnectionCoordinate.getRow()
+            );
+
+            if (!this.invalidPlacement(candidate, existing, potentialNewRoomOrigin)) {
+                candidateDoorCoordinate = potentialNewRoomOrigin;
+                candidate.assignDoorPositionWithRoom(i);
+                break;
+            }
         }
-        return potentialNewRoomOrigin;
+
+        return candidateDoorCoordinate;
     }
 
     /** checks if some coordinate (c0) : roomBottomLeft <= c0 <= roomTopRight */
-    private boolean invalidPlacement(Room originRoom, Room newRoom, Coordinate potentialPlacement) {
-        if (this.coordinateOutOfBounds(potentialPlacement.getX(), potentialPlacement.getY())) {
+    private boolean invalidPlacement(Room candidate, Room existing, Coordinate potentialPlacement) {
+        if (this.coordinateOutOfBounds(potentialPlacement.getCol(), potentialPlacement.getRow())) {
             return true;
         }
+
         if (
-                this.twoPointsHasIntersection(
-                    potentialPlacement.getX(),
-                    potentialPlacement.getY(),
-                    originRoom.getOrigin().getX(),
-                    originRoom.getOrigin().getX() + originRoom.getWidth(),
-                    originRoom.getOrigin().getY(),
-                    originRoom.getOrigin().getY() + originRoom.getHeight()
+                this.roomHasIntersectionWithPoint(
+                    potentialPlacement.getCol(),
+                    potentialPlacement.getRow(),
+                    existing.getOrigin().getCol(),
+                    existing.getOrigin().getCol() + existing.getAdjustedWidth(),
+                    existing.getOrigin().getRow(),
+                    existing.getOrigin().getRow() + existing.getAdjustedHeight()
                 )
         ) {
             return true;
         }
-        for (int x = potentialPlacement.getX(); x < potentialPlacement.getX() + newRoom.getWidth(); x += 1) {
-            for (int y = potentialPlacement.getY(); y < potentialPlacement.getY() + newRoom.getHeight(); y += 1) {
-                if (this.tileAlreadySet(this.grid[x][y].character())) {
+
+        for (int row = potentialPlacement.getRow(); row < potentialPlacement.getRow() + candidate.getRows(); row += 1) {
+            for (int col = potentialPlacement.getCol(); col < potentialPlacement.getCol() + candidate.getCols(); col += 1) {
+                if (this.coordinateOutOfBounds(col, row) || this.tileAlreadySet(this.grid[col][row].character())) {
                     return true;
                 }
             }
@@ -309,29 +343,33 @@ public class WorldGenerator {
         return false;
     }
 
-    private boolean twoPointsHasIntersection(int originX, int originY, int x0, int x1, int y0, int y1) {
-        return (originX >= x0 && originX <= x1) && (originY >= y0 && originY <= y1);
+    private boolean roomHasIntersectionWithPoint(int originCol, int originRow, int col0, int col1, int row0, int row1) {
+        return (originCol >= col0 && originCol <= col1) && (originRow >= row0 && originRow <= row1);
     }
 
     /** add tiles to the border of the room */
     private void addWallToRoom(Room room) {
-        int xp = room.getOrigin().getX();
-        int rightColumn = xp + room.getWidth() - 1;
-        int yp = room.getOrigin().getY();
-        int topRow = yp + room.getHeight() - 1;
-        int actualWidth = xp + room.getWidth();
-        int actualHeight = yp + room.getHeight();
+        int leftColumn = room.getOrigin().getCol();
+        int rightColumn = leftColumn + room.getAdjustedWidth();
+        int bottomRow = room.getOrigin().getRow();
+        int topRow = bottomRow + room.getAdjustedHeight();
+        int actualWidth = leftColumn + room.getCols();
+        int actualHeight = bottomRow + room.getRows();
 
-        Coordinate door = room.getAssignedDoor();
-        this.grid[xp + door.getX()][yp + door.getY()] = Tileset.FLOOR;
-
-        for (int y = yp; y < actualHeight; y += 1) {
-            checkAndAssignWall(xp, y);
-            checkAndAssignWall(rightColumn, y);
+        for (int i = 0; i < 4; i += 1) {
+            if (room.doorPositionAssigned(i)) {
+                Coordinate door = room.getDoor(i);
+                this.grid[leftColumn + door.getCol()][bottomRow + door.getRow()] = Tileset.FLOOR;
+            }
         }
-        for (int x = xp; x < actualWidth; x += 1) {
-            checkAndAssignWall(x, yp);
-            checkAndAssignWall(x, topRow);
+
+        for (int row = bottomRow; row < actualHeight; row += 1) {
+            checkAndAssignWall(leftColumn, row);
+            checkAndAssignWall(rightColumn, row);
+        }
+        for (int col = leftColumn; col < actualWidth; col += 1) {
+            checkAndAssignWall(col, bottomRow);
+            checkAndAssignWall(col, topRow);
         }
     }
 
@@ -344,8 +382,8 @@ public class WorldGenerator {
 
 
 
-    private boolean coordinateOutOfBounds(int x, int y) {
-        return (x < 0 || x >= this.width() || y < 0 || y >= this.height());
+    private boolean coordinateOutOfBounds(int col, int row) {
+        return (col < 0 || col >= this.cols() || row < 0 || row >= this.rows());
     }
 
     private boolean tileAlreadySet(char tileChar) {

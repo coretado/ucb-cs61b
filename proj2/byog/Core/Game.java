@@ -50,13 +50,13 @@ public class Game {
         Game game = new Game();
         TETile[][] world = game.playWithInputString("123456");
         game.ter.initialize(WIDTH, HEIGHT);
-        for (int i = 0; i < 50; i += 1) {
-            for (int y = 0; y < 50; y += 1) {
-                if (world[i][y].character() == '#' || world[i][y].character() == '·') {
-                    System.out.println("at coor (" + i + ", " + y + ") : " + world[i][y].character());
-                }
-            }
-        }
+//        for (int i = 0; i < 50; i += 1) {
+//            for (int y = 0; y < 50; y += 1) {
+//                if (world[i][y].character() == '#' || world[i][y].character() == '·') {
+//                    System.out.println("at coor (" + i + ", " + y + ") : " + world[i][y].character());
+//                }
+//            }
+//        }
         game.ter.renderFrame(world);
     }
 }

@@ -10,7 +10,7 @@ public class Room {
     private final RectType rectType;
     // 0 = top, 1 = right, 2 = down, 3 = left
     private Coordinate[] doors;
-    private boolean[] doorWasAssignedRoom;
+    private final boolean[] doorWasAssignedRoom;
 
     public Room(int cols, int rows, RectType rectType) {
         this.cols = cols + 2;
@@ -63,8 +63,12 @@ public class Room {
         return this.doors[doorKey];
     }
 
-    public Coordinate getAssignedDoor() {
-        return this.doors[this.doorKey];
+    public void assignDoorPositionWithRoom(int i) {
+        this.doorWasAssignedRoom[i] = true;
+    }
+
+    public boolean doorPositionAssigned(int i) {
+        return this.doorWasAssignedRoom[i];
     }
 
 }
