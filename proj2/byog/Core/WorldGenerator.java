@@ -8,8 +8,8 @@ import java.util.Deque;
 import java.util.Random;
 
 public class WorldGenerator {
-    private final int ROOM_WIDTH = 6;
-    private final int ROOM_HEIGHT = 6;
+    private final int ROOM_WIDTH = 5;
+    private final int ROOM_HEIGHT = 5;
 
     public enum RectType {
         ROOM,
@@ -161,7 +161,6 @@ public class WorldGenerator {
 
             // check rooms for a valid connection
             for (Room existing : this.rooms) {
-                System.out.println("AH INFINITE LOOP");
                 boolean wasAbleToConnectToDoorInToCheckRoom =
                         this.checkAndSetOriginToPotentialRoomIfValid(candidate, existing);
                 if (wasAbleToConnectToDoorInToCheckRoom) {
@@ -218,13 +217,13 @@ public class WorldGenerator {
      *  Paints in floor tiles in the interior of a room (minus the wall padding)
      */
     private void addFloorTilesToRoom(Room room) {
-        int col = room.getOrigin().getCol() + 1;
-        int row = room.getOrigin().getRow() + 1;
-        int colLength = col + room.getInnerCols();
-        int rowLength = row + room.getInnerRows();
+        int originCol = room.getOrigin().getCol() + 1;
+        int originRow = room.getOrigin().getRow() + 1;
+        int colLength = originCol + room.getInnerCols();
+        int rowLength = originRow + room.getInnerRows();
 
-        for ( ; row < rowLength; row += 1) {
-            for ( ; col < colLength; col += 1) {
+        for (int row = originRow ; row < rowLength; row += 1) {
+            for (int col = originCol ; col < colLength; col += 1) {
                 this.grid[col][row] = Tileset.FLOOR;
             }
         }
@@ -266,14 +265,9 @@ public class WorldGenerator {
 
         switch (doorKey) {
             case 0:
-                mappedCoordinate = new Coordinate(
-                        doorCoordinateFromExisting.getCol() + existing.getOrigin().getCol(),
-                        doorCoordinateFromExisting.getRow() + existing.getOrigin().getRow() + 1
-                );
-                break;
             case 1:
                 mappedCoordinate = new Coordinate(
-                        doorCoordinateFromExisting.getCol() + existing.getOrigin().getCol() + 1,
+                        doorCoordinateFromExisting.getCol() + existing.getOrigin().getCol(),
                         doorCoordinateFromExisting.getRow() + existing.getOrigin().getRow()
                 );
                 break;
