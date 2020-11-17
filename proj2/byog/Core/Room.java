@@ -1,74 +1,62 @@
 package byog.Core;
-import byog.Core.WorldGenerator.RectType;
 
 public class Room {
-    private final int cols;
-    private final int rows;
-    private int doorKey;
-    public Coordinate origin;
-    // for debugging purposes
-    private final RectType rectType;
-    // 0 = top, 1 = right, 2 = down, 3 = left
+    private final int width;
+    private final int height;
+    private Coordinate origin;
     private Coordinate[] doors;
-    private final boolean[] doorWasAssignedRoom;
+    private final boolean[] doorTaken = new boolean[]{false, false, false, false};
 
-    public Room(int cols, int rows, RectType rectType) {
-        this.cols = cols + 2;
-        this.rows = rows + 2;
-        this.rectType = rectType;
-        this.doorWasAssignedRoom = new boolean[]{false, false, false, false};
+    public Room(int width, int height) {
+        this.width = width + 2;
+        this.height = height + 2;
     }
 
     public void setOrigin(Coordinate origin) {
         this.origin = origin;
     }
 
-    public Coordinate getOrigin() {
-        return this.origin;
+    public int getOriginCol() {
+        return this.origin.getCol();
     }
 
-    public int roomSize() {
-        return cols * rows;
+    public int getOriginRow() {
+        return this.origin.getRow();
     }
 
-    public int getCols() {
-        return this.cols;
+    public int getWidth() {
+        return this.width;
     }
 
-    public int getAdjustedWidth() {
-        return this.cols - 1;
+    public int getHeight() {
+        return this.height;
     }
 
-    public int getInnerCols() {
-        return this.cols - 2;
+    public int getIndexWidth() {
+        return this.width - 1;
     }
 
-    public int getRows() {
-        return this.rows;
+    public int getIndexHeight() {
+        return this.height - 1;
     }
 
-    public int getAdjustedHeight() {
-        return this.rows - 1;
-    }
-
-    public int getInnerRows() {
-        return this.rows - 2;
+    public int getArea() {
+        return this.width * this.height;
     }
 
     public void setDoors(Coordinate[] doors) {
         this.doors = doors;
     }
 
-    public Coordinate getDoor(int doorKey) {
-        return this.doors[doorKey];
+    public Coordinate getDoorCoordinate(int key) {
+        return this.doors[key];
     }
 
-    public void assignDoorPositionWithRoom(int i) {
-        this.doorWasAssignedRoom[i] = true;
+    public void setDoorTaken(int key) {
+        this.doorTaken[key] = true;
     }
 
-    public boolean doorPositionAssigned(int i) {
-        return this.doorWasAssignedRoom[i];
+    public boolean getDoorTaken(int key) {
+        return this.doorTaken[key];
     }
-
 }
