@@ -64,7 +64,7 @@ public class WorldGenerator {
 
     /* grid traversal and grid check helpers */
     private boolean coordinateOutOfBounds(int col, int row) {
-        return (col < 1) || col > this.cols - 2 || row < 1 || row > this.rows - 2;
+        return col < 0 || col >= this.cols || row < 0 || row >= this.rows;
     }
 
     private boolean tileWasAssigned(char tile) {
@@ -76,16 +76,16 @@ public class WorldGenerator {
         int candidateY2 = candidateCoordinate.getRow() + candidate.getIndexHeight();
         int existingX2 = existing.getOriginCol() + existing.getIndexWidth();
         int existingY2 = existing.getOriginRow() + existing.getIndexHeight();
-        return existing.getOriginCol() < candidateX2 &&
-            existingX2 > candidateCoordinate.getCol() &&
-            existing.getOriginRow() > candidateY2 &&
-            existingY2 < candidateCoordinate.getRow();
+        return (candidateCoordinate.getCol() > existingX2) ||
+            (candidateCoordinate.getRow() > existingY2) ||
+            (existing.getOriginCol() > candidateX2) ||
+            (existing.getOriginRow() > candidateY2);
     }
     /* end grid traversal and grid check helpers */
 
     /* everything room related */
     private boolean reachedCapacity() {
-        return ((float) this.area / (this.cols * this.rows)) >= 0.4;
+        return ((float) this.area / (this.cols * this.rows)) >= 0.65;
     }
 
     private void addArea(int area) {
@@ -242,8 +242,11 @@ public class WorldGenerator {
             mapCoordinates[i] = this.shiftDoorCoordinate(existing, i);
         }
 
-        // check each map coordinate agaisnt all four doors of the candidate
+        // check each map coordinate against all four doors of the candidate
         for (int existingKey = 0; existingKey < 4; existingKey += 1) {
+            if (candidateOriginFound) {
+                break;
+            }
 
             // if the existing room already has a door taken at this index, or the map coordinate was null, continue
             if (existing.getDoorTaken(existingKey) || mapCoordinates[existingKey] == null) {
@@ -264,7 +267,13 @@ public class WorldGenerator {
                 );
 
                 // check to see that this is a valid placement on the map
-                if (this.coordinateOutOfBounds(potentialOrigin.getCol(), potentialOrigin.getRow())) {
+                if (
+                    this.coordinateOutOfBounds(potentialOrigin.getCol(), potentialOrigin.getRow()) ||
+                    this.coordinateOutOfBounds(
+                    potentialOrigin.getCol() + candidate.getIndexWidth(),
+                        potentialOrigin.getRow() + candidate.getIndexHeight()
+                    )
+                ) {
                     continue;
                 }
 
@@ -278,6 +287,7 @@ public class WorldGenerator {
                 existing.setDoorTaken(existingKey);
                 candidate.setDoorTaken(candidateKey);
                 candidateOriginFound = true;
+                break;
             }
 
         }
@@ -290,6 +300,16 @@ public class WorldGenerator {
         int roomRow = room.getOriginRow();
         int roomFarRightCol = roomCol + room.getIndexWidth();
         int roomTopRow = roomRow + room.getIndexHeight();
+
+        for (int col = 0; col < room.getWidth(); col += 1) {
+            this.grid[roomCol + col][roomRow] = Tileset.WALL;
+            this.grid[roomCol + col][roomTopRow] = Tileset.WALL;
+        }
+
+        for (int row = 0; row < room.getHeight(); row += 1) {
+            this.grid[roomCol][roomRow + row] = Tileset.WALL;
+            this.grid[roomFarRightCol][roomRow + row] = Tileset.WALL;
+        }
 
         // set floor tiles at doors
         for (int key = 0; key < 4; key += 1) {
@@ -306,16 +326,6 @@ public class WorldGenerator {
                 this.grid[roomCol + col][roomRow + row] = Tileset.FLOOR;
             }
         }
-
-        for (int col = 0; col < room.getWidth(); col += 1) {
-            this.grid[roomCol + col][roomRow] = Tileset.WALL;
-            this.grid[roomCol + col][roomTopRow] = Tileset.WALL;
-        }
-
-        for (int row = 0; row < room.getHeight(); row += 1) {
-            this.grid[roomCol][roomRow + row] = Tileset.WALL;
-            this.grid[roomFarRightCol][roomRow + row] = Tileset.WALL;
-        }
     }
 
     public void generateWorld() {
@@ -327,13 +337,10 @@ public class WorldGenerator {
         while (overflowCounter < 100 && !this.reachedCapacity()) {
             // random new room; could be a wide room or a corridor
             Room candidate = this.generateNewCandidateRoom();
-            System.out.println(overflowCounter);
             overflowCounter += 1;
 
             // check candidate against all rooms to see if it can be placed in room
             for (Room existing : this.rooms) {
-                System.out.println(this.rooms.size());
-
                 // function will check if candidate can attach to any of the four doors of the existing room
                 boolean canPlaceCandidate = checkExistingRoomDoorConnectionsForCandidacy(existing, candidate);
 
