@@ -6,8 +6,8 @@ import byog.TileEngine.TETile;
 public class Game {
     TERenderer ter = new TERenderer();
     /* Feel free to change the width and height. */
-    public static final int WIDTH = 20;
-    public static final int HEIGHT = 20;
+    public static final int WIDTH = 25;
+    public static final int HEIGHT = 25;
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
@@ -50,13 +50,6 @@ public class Game {
         Game game = new Game();
         TETile[][] world = game.playWithInputString("123456");
         game.ter.initialize(WIDTH, HEIGHT);
-//        for (int i = 0; i < 50; i += 1) {
-//            for (int y = 0; y < 50; y += 1) {
-//                if (world[i][y].character() == '#' || world[i][y].character() == '·') {
-//                    System.out.println("at coor (" + i + ", " + y + ") : " + world[i][y].character());
-//                }
-//            }
-//        }
         game.ter.renderFrame(world);
     }
 }

@@ -95,7 +95,6 @@ public class WorldGenerator {
     private void registerRoom(Room room) {
         this.rooms.add(room);
         this.addArea(room.getArea());
-        this.addDoors(room);
     }
 
     private void createDungeonCore() {
@@ -121,6 +120,7 @@ public class WorldGenerator {
             placed = true;
             room.setOrigin(origin);
         }
+        this.addDoors(room);
         this.registerRoom(room);
     }
 
