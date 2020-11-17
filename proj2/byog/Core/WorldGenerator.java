@@ -149,27 +149,27 @@ public class WorldGenerator {
     // 0 = down, 1 = right, 2 = top, 3 = left
     private void addDoors(Room room) {
         Coordinate[] doorCoordinates = new Coordinate[4];
-        doorCoordinates[0] = new Coordinate(this.generateDoorCoordinate(room.getIndexWidth()), 0);
-        doorCoordinates[1] = new Coordinate(room.getIndexWidth(), this.generateDoorCoordinate(room.getIndexHeight()));
-        doorCoordinates[2] = new Coordinate(this.generateDoorCoordinate(room.getIndexWidth()), room.getIndexHeight());
-        doorCoordinates[3] = new Coordinate(0, this.generateDoorCoordinate(room.getIndexHeight()));
+        doorCoordinates[0] = new Coordinate(this.generateDoorCoordinate(room.getInnerWidth()), 0);
+        doorCoordinates[1] = new Coordinate(room.getIndexWidth(), this.generateDoorCoordinate(room.getInnerHeight()));
+        doorCoordinates[2] = new Coordinate(this.generateDoorCoordinate(room.getInnerWidth()), room.getIndexHeight());
+        doorCoordinates[3] = new Coordinate(0, this.generateDoorCoordinate(room.getInnerHeight()));
         room.setDoors(doorCoordinates);
     }
 
     private void addCorridorDoors(CorridorType corridorType, Room room) {
         Coordinate[] doorCoordinates = new Coordinate[4];
         if (corridorType == CorridorType.Horizontal) {
-            doorCoordinates[0] = new Coordinate(this.generateDoorCoordinate(room.getIndexWidth()), 0);
+            doorCoordinates[0] = new Coordinate(this.generateDoorCoordinate(room.getInnerWidth()), 0);
             doorCoordinates[1] = new Coordinate(room.getIndexWidth(), 1);
             doorCoordinates[2] = new Coordinate(
-                this.generateDoorCoordinate(room.getIndexWidth()), room.getIndexHeight());
+                this.generateDoorCoordinate(room.getInnerWidth()), room.getIndexHeight());
             doorCoordinates[3] = new Coordinate(0, 1);
         } else {
             doorCoordinates[0] = new Coordinate(1, 0);
             doorCoordinates[1] = new Coordinate(
-                room.getIndexWidth(), this.generateDoorCoordinate(room.getIndexHeight()));
+                room.getIndexWidth(), this.generateDoorCoordinate(room.getInnerHeight()));
             doorCoordinates[2] = new Coordinate(1, room.getIndexHeight());
-            doorCoordinates[3] = new Coordinate(0, this.generateDoorCoordinate(room.getIndexHeight()));
+            doorCoordinates[3] = new Coordinate(0, this.generateDoorCoordinate(room.getInnerHeight()));
         }
         room.setDoors(doorCoordinates);
     }

@@ -40,6 +40,14 @@ public class Room {
         return this.height - 1;
     }
 
+    public int getInnerWidth() {
+        return this.width - 2;
+    }
+
+    public int getInnerHeight() {
+        return this.height - 2;
+    }
+
     public int getArea() {
         return this.width * this.height;
     }
