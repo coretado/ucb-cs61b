@@ -57,6 +57,12 @@ public class WorldGenerator {
         return Math.max(MINIMUM_ROOM_DIMENSION, this.seedGen.nextInt(MAXIMUM_ROOM_DIMENSION));
     }
 
+    private int generateCorridorDimension() {
+        int MAXIMUM_CORRIDOR_DIMENSION = 8;
+        int MINIMUM_ROOM_DIMENSION = 4;
+        return Math.max(MINIMUM_ROOM_DIMENSION, this.seedGen.nextInt(MAXIMUM_CORRIDOR_DIMENSION));
+    }
+
     private int generateDoorCoordinate(int value) {
         return this.seedGen.nextInt(value) + 1;
     }
@@ -65,10 +71,6 @@ public class WorldGenerator {
     /* grid traversal and grid check helpers */
     private boolean coordinateOutOfBounds(int col, int row) {
         return col < 0 || col >= this.cols || row < 0 || row >= this.rows;
-    }
-
-    private boolean tileWasAssigned(char tile) {
-        return tile != ' ';
     }
 
     private boolean roomsClearOfEachOther(Room existing, Coordinate candidateCoordinate, Room candidate) {
@@ -137,10 +139,10 @@ public class WorldGenerator {
     private Room generateCorridor() {
         Room corridorCandidate;
         if (this.corridorIsVertical()) {
-            corridorCandidate = new Room(3, this.generateRoomDimension());
+            corridorCandidate = new Room(1, this.generateCorridorDimension());
             this.addCorridorDoors(CorridorType.Vertical, corridorCandidate);
         } else {
-            corridorCandidate = new Room(this.generateRoomDimension(), 3);
+            corridorCandidate = new Room(this.generateCorridorDimension(), 1);
             this.addCorridorDoors(CorridorType.Horizontal, corridorCandidate);
         }
         return corridorCandidate;
@@ -334,7 +336,7 @@ public class WorldGenerator {
 
         // while world <= 65% capacity, create rooms
         int overflowCounter = 0;
-        while (overflowCounter < 100 && !this.reachedCapacity()) {
+        while (overflowCounter < 1000 && !this.reachedCapacity()) {
             // random new room; could be a wide room or a corridor
             Room candidate = this.generateNewCandidateRoom();
             overflowCounter += 1;
