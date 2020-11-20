@@ -26,6 +26,7 @@ public class MemoryGame {
 
         int seed = Integer.parseInt(args[0]);
         MemoryGame game = new MemoryGame(40, 40);
+        game.rand = new Random(seed);
         game.startGame();
     }
 
@@ -47,22 +48,47 @@ public class MemoryGame {
     }
 
     public String generateRandomString(int n) {
-        //TODO: Generate random string of letters of length n
-        return null;
+        if (n == 0) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < n; i += 1) {
+            sb.append(CHARACTERS[this.rand.nextInt(CHARACTERS.length)]);
+        }
+
+        return sb.toString();
     }
 
     public void drawFrame(String s) {
         //TODO: Take the string and display it in the center of the screen
         //TODO: If game is not over, display relevant game information at the top of the screen
+        StdDraw.clear(Color.black);
+        StdDraw.setFont(new Font("Monaco", Font.BOLD, 30));
+        StdDraw.text(width / 2.0, height / 2.0, s);
+        StdDraw.show();
     }
 
     public void flashSequence(String letters) {
         //TODO: Display each character in letters, making sure to blank the screen between letters
+        for (int i = 0; i < letters.length(); i += 1) {
+            this.drawFrame(letters.substring(i, i + 1));
+            StdDraw.pause(1000);
+            this.drawFrame(" ");
+            StdDraw.pause(500);
+        }
     }
 
     public String solicitNCharsInput(int n) {
         //TODO: Read n letters of player input
-        return null;
+        StringBuilder sb = new StringBuilder();
+        int counter = 0;
+        while (counter < n && StdDraw.hasNextKeyTyped()) {
+            sb.append(StdDraw.nextKeyTyped());
+            counter += 1;
+            this.drawFrame(sb.toString());
+        }
+        return sb.toString();
     }
 
     public void startGame() {
