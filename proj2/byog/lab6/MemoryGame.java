@@ -59,9 +59,19 @@ public class MemoryGame {
     }
 
     public void drawFrame(String s) {
-        //TODO: Take the string and display it in the center of the screen
-        //TODO: If game is not over, display relevant game information at the top of the screen
+        StdDraw.clear();
         StdDraw.clear(Color.black);
+
+        if (!this.gameOver) {
+            StdDraw.setFont(new Font("Monaco", Font.BOLD, 20));
+            StdDraw.textLeft(1, this.height - 1, "Round " + this.round);
+            StdDraw.text(this.width / 2.0, height - 1, this.playerTurn ? "Type" : "Watch");
+            StdDraw.textRight(
+            this.width - 1, this.height - 1, ENCOURAGEMENT[ENCOURAGEMENT.length % this.round]
+            );
+            StdDraw.line(0, this.height - 2, this.width, this.height - 2);
+        }
+
         StdDraw.setFont(new Font("Monaco", Font.BOLD, 30));
         StdDraw.setPenColor(Color.white);
         StdDraw.text(width / 2.0, height / 2.0, s);
@@ -69,7 +79,6 @@ public class MemoryGame {
     }
 
     public void flashSequence(String letters) {
-        //TODO: Display each character in letters, making sure to blank the screen between letters
         for (int i = 0; i < letters.length(); i += 1) {
             this.drawFrame(letters.substring(i, i + 1));
             StdDraw.pause(1000);
@@ -79,7 +88,6 @@ public class MemoryGame {
     }
 
     public String solicitNCharsInput(int n) {
-        //TODO: Read n letters of player input
         StringBuilder sb = new StringBuilder();
         this.drawFrame(sb.toString());
 
@@ -95,11 +103,9 @@ public class MemoryGame {
     }
 
     public void startGame() {
-        //TODO: Set any relevant variables before the game starts
         this.round = 1;
         this.gameOver = false;
 
-        //TODO: Establish Game loop
         while (!this.gameOver) {
             this.drawFrame("Round: " + this.round);
             StdDraw.pause(1000);
