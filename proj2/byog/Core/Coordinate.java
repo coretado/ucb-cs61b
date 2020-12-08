@@ -1,6 +1,6 @@
 package byog.Core;
 
-public class Coordinate {
+public class Coordinate implements CoordinateBase {
     private final int col;
     private final int row;
 
@@ -9,10 +9,12 @@ public class Coordinate {
         this.row = row;
     }
 
+    @Override
     public int getCol() {
         return this.col;
     }
 
+    @Override
     public int getRow() {
         return this.row;
     }

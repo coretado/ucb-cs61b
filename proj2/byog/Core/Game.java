@@ -2,11 +2,10 @@ package byog.Core;
 
 import byog.TileEngine.TERenderer;
 import byog.TileEngine.TETile;
-import edu.princeton.cs.algs4.StdDraw;
+import byog.TileEngine.Tileset;
+import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class Game {
@@ -16,7 +15,7 @@ public class Game {
     public static final int HEIGHT = 35;
     /* game env variables */
     private final int gameClockCycle = 17;
-    private StringBuilder playerMoves = new StringBuilder();
+    private StringBuilder gameState = new StringBuilder();
     private ArrayBlockingQueue<Character> lastEight = new ArrayBlockingQueue<>(8);
     private boolean playing = false;
     private boolean quitgame = false;
@@ -25,6 +24,9 @@ public class Game {
     private int internalHeight;
     private final Font standardFont = new Font("Monaco", Font.BOLD, 16);
     private final Font titleFont = new Font("Monaco", Font.BOLD, 30);
+    private TETile[][] world;
+    private WorldGenerator worldGenerator;
+    private PlayerLocation playerLocation;
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
@@ -32,24 +34,24 @@ public class Game {
     public void playWithKeyboard() {
         // initialize internal env variables
         this.internalHeight = HEIGHT + 10;
-        this.internalWidth = WIDTH + 5;
+        this.internalWidth = WIDTH + 10;
 
         // initialize world
-        this.ter.initialize(this.internalWidth, this.internalHeight, 5, 0);
+        this.ter.initialize(this.internalWidth, this.internalHeight, 5, 5);
 
         // start game
         while (!this.quitgame) {
             // start menu loop
             if (!this.playing) {
                 // display menu options
-                this.paintMenuOptions();
+                this.drawMenuOptionsFrame();
                 StdDraw.pause(gameClockCycle);
 
                 // receive player option
                 char option = this.solicitMenuOption();
 
                 // enqueue player move
-                this.playerMoves.append(option);
+                this.gameState.append(option);
 
                 // user quit
                 if (option == 'Q') {
@@ -58,6 +60,7 @@ public class Game {
 
                 // user loading saved game
                 if (option == 'L') {
+                    // TODO: Decide if load game cycle is done here or in playing loop
                     this.loadgame = true;
                 }
 
@@ -68,7 +71,11 @@ public class Game {
                     // strip N and S characters
                     String seed = gatherSeed.substring(1, gatherSeed.length() - 1);
                     // start game
-
+                    this.worldGenerator = new WorldGenerator(WIDTH, HEIGHT, Long.parseLong(seed));
+                    this.worldGenerator.generateWorld();
+                    this.world = this.worldGenerator.getGrid();
+                    // randomly place character in a room
+                    this.playerLocation = this.worldGenerator.randomlyPlacePlayerModel();
                 }
             }
 
@@ -115,7 +122,12 @@ public class Game {
         StdDraw.clear(Color.black);
     }
 
-    private void paintMenuOptions() {
+    private void updatePlayerLocation(int col, int row) {
+        this.playerLocation.setCol(col);
+        this.playerLocation.setRow(row);
+    }
+
+    private void drawMenuOptionsFrame() {
         // grab positions
         int midWidth = this.internalWidth / 2;
         int titleHeight = (int) (this.internalHeight * 0.8);
@@ -160,6 +172,21 @@ public class Game {
         // hello, world
         StdDraw.show();
     }
+    
+    private void drawGameFrame() {
+        this.resetScreen();
+        StdDraw.setFont(this.standardFont);
+        StdDraw.setPenColor(Color.white);
+
+        int mouseCol = ((int) StdDraw.mouseX());
+        int mouseRow = ((int) StdDraw.mouseY());
+        TETile hoverTile = this.world[mouseCol][mouseRow];
+        if (hoverTile != null) {
+            StdDraw.textLeft(0, this.internalHeight, hoverTile.description());
+        }
+
+        ter.renderFrame(this.world);
+    }
 
     private char solicitMenuOption() {
         char userInput = 0;
@@ -201,7 +228,7 @@ public class Game {
 
             // assuming in good faith every input is either an integer or "S"
             char input = StdDraw.nextKeyTyped();
-            this.playerMoves.append(input);
+            this.gameState.append(input);
             sb.append(input);
 
             // continue is used to not show integers with stop command
@@ -215,6 +242,10 @@ public class Game {
         }
 
         return sb.toString();
+    }
+
+    private void solicitGameInput() {
+        
     }
 
     public static void main(String[] args) {

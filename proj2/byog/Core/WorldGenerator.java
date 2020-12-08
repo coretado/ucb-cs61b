@@ -5,6 +5,7 @@ import byog.TileEngine.Tileset;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.Random;
 
 public class WorldGenerator {
@@ -356,5 +357,26 @@ public class WorldGenerator {
 
         // "paint" in the world
         this.rooms.forEach(this::setTilesInWorld);
+    }
+
+    public PlayerLocation randomlyPlacePlayerModel() {
+        int selection = this.seedGen.nextInt(this.rooms.size());
+        Room selected = null;
+        Iterator<Room> rooms = this.rooms.iterator();
+        for (int i = 0; rooms.hasNext(); i += 1) {
+            if (i == selection) {
+                selected = rooms.next();
+                break;
+            }
+            rooms.next();
+        }
+        assert selected != null;
+        // plus one is to account for the padding used in a room for walls
+        int col = this.seedGen.nextInt(selected.getInnerWidth()) + 1;
+        int row = this.seedGen.nextInt(selected.getInnerHeight()) + 1;
+        // place player model at the randomized location
+        this.grid[selected.getOriginCol() + col][selected.getOriginRow() + row] = Tileset.PLAYER;
+
+        return new PlayerLocation(selected.getOriginCol() + col, selected.getOriginRow() + row);
     }
 }
