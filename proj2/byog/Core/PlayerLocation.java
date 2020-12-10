@@ -1,15 +1,15 @@
 package byog.Core;
 
 public class PlayerLocation implements CoordinateBase {
-    private int row;
     private int col;
+    private int row;
 
     public PlayerLocation() {
     }
 
-    public PlayerLocation(int row, int col) {
-        this.row = row;
+    public PlayerLocation(int col, int row) {
         this.col = col;
+        this.row = row;
     }
 
     @Override

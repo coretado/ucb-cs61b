@@ -74,6 +74,7 @@ public class Game {
                     this.world = this.worldGenerator.getGrid();
                     // randomly place character in a room
                     this.playerLocation = this.worldGenerator.randomlyPlacePlayerModel();
+                    System.out.println("player location at start: (" + this.playerLocation.getCol() + ", " + this.playerLocation.getRow() + ")");
                     // start the game
                     this.playing = true;
                 }
@@ -185,15 +186,20 @@ public class Game {
         int mouseCol = ((int) StdDraw.mouseX());
         int mouseRow = ((int) StdDraw.mouseY());
 
-        TETile hoverTile = this.world[mouseCol][mouseRow];
-        if (hoverTile != null) {
-            StdDraw.textLeft(1, this.internalHeight - 1, hoverTile.description());
-        }
+        StdDraw.textLeft(1, this.internalHeight - 1, "( " + mouseCol + ", " + mouseRow + " )");
+
+//        StdDraw.show();
+
+//        TETile hoverTile = this.world[mouseCol][mouseRow];
+//        if (hoverTile != null) {
+//            StdDraw.textLeft(1, this.internalHeight - 1, hoverTile.description());
+//        }
     }
 
     private void drawGameFrame() {
-        this.drawGameGui();
         ter.renderFrame(this.world);
+//        this.drawGameGui();
+//        StdDraw.show();
     }
 
     private char solicitMenuOption() {
@@ -252,6 +258,10 @@ public class Game {
     }
 
     private void moveDirectionHelper(char dir) {
+        if (dir != 'W' && dir != 'A' && dir != 'S' && dir != 'D') {
+            return;
+        }
+
         PlayerLocation move = new PlayerLocation();
 
         if (dir == 'W') {
@@ -271,7 +281,7 @@ public class Game {
             move.setCol(this.playerLocation.getCol() + 1);
         }
         // if player attempts to move into a wall, don't have to update their position
-        if (this.world[move.getCol()][move.getCol()].character() == '#') {
+        if (this.world[move.getCol()][move.getRow()].character() == '#') {
             return;
         }
 
@@ -290,7 +300,7 @@ public class Game {
             StdDraw.pause(gameClockCycle);
 
             // detect mouse movement
-            this.drawGameGui();
+            this.drawGameFrame();
 
             // continue if no input detected
             if (!StdDraw.hasNextKeyTyped()) {
@@ -300,6 +310,7 @@ public class Game {
             // only unicode characters are valid; i.e. arrows keys would not work
             char input = StdDraw.nextKeyTyped();
             this.gameState.append(input);
+            System.out.println(input);
 
             // detect if game needs to end
             String quitCmd = this.gameState.substring(this.gameState.length() - 2);
@@ -311,8 +322,8 @@ public class Game {
             // move character model
             this.moveDirectionHelper(input);
 
-            // render world
-            this.drawGameFrame();
+            // render worldW
+//            this.drawGameFrame();
         }
     }
 
