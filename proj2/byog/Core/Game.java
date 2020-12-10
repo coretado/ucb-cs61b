@@ -6,7 +6,6 @@ import byog.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
-import java.util.concurrent.ArrayBlockingQueue;
 
 public class Game {
     TERenderer ter = new TERenderer();
@@ -16,7 +15,6 @@ public class Game {
     /* game env variables */
     private final int gameClockCycle = 17;
     private StringBuilder gameState = new StringBuilder();
-    private ArrayBlockingQueue<Character> lastEight = new ArrayBlockingQueue<>(8);
     private boolean playing = false;
     private boolean quitgame = false;
     private boolean loadgame = false;
@@ -76,14 +74,18 @@ public class Game {
                     this.world = this.worldGenerator.getGrid();
                     // randomly place character in a room
                     this.playerLocation = this.worldGenerator.randomlyPlacePlayerModel();
+                    // start the game
+                    this.playing = true;
                 }
             }
 
             // start game loop
             while(this.playing) {
-
+                this.solicitGameInput();
             }
         }
+
+        System.out.println("I'm out");
     }
 
     /**
@@ -172,27 +174,32 @@ public class Game {
         // hello, world
         StdDraw.show();
     }
-    
-    private void drawGameFrame() {
+
+    // separated so game UI and game traversal are separate
+    private void drawGameGui() {
         this.resetScreen();
+
         StdDraw.setFont(this.standardFont);
         StdDraw.setPenColor(Color.white);
 
         int mouseCol = ((int) StdDraw.mouseX());
         int mouseRow = ((int) StdDraw.mouseY());
+
         TETile hoverTile = this.world[mouseCol][mouseRow];
         if (hoverTile != null) {
-            StdDraw.textLeft(0, this.internalHeight, hoverTile.description());
+            StdDraw.textLeft(1, this.internalHeight - 1, hoverTile.description());
         }
+    }
 
+    private void drawGameFrame() {
+        this.drawGameGui();
         ter.renderFrame(this.world);
     }
 
     private char solicitMenuOption() {
         char userInput = 0;
-        boolean validInput = false;
 
-        while (!validInput) {
+        while (true) {
             // pause for game tick
             StdDraw.pause(gameClockCycle);
 
@@ -204,7 +211,7 @@ public class Game {
             userInput = StdDraw.nextKeyTyped();
 
             if (userInput == 'Q' || userInput == 'L' || userInput == 'N') {
-                validInput = true;
+                break;
             }
         }
 
@@ -244,14 +251,76 @@ public class Game {
         return sb.toString();
     }
 
+    private void moveDirectionHelper(char dir) {
+        PlayerLocation move = new PlayerLocation();
+
+        if (dir == 'W') {
+            move.setRow(this.playerLocation.getRow() + 1);
+            move.setCol(this.playerLocation.getCol());
+        }
+        if (dir == 'A') {
+            move.setRow(this.playerLocation.getRow());
+            move.setCol(this.playerLocation.getCol() - 1);
+        }
+        if (dir == 'S') {
+            move.setRow(this.playerLocation.getRow() - 1);
+            move.setCol(this.playerLocation.getCol());
+        }
+        if (dir == 'D') {
+            move.setRow(this.playerLocation.getRow());
+            move.setCol(this.playerLocation.getCol() + 1);
+        }
+        // if player attempts to move into a wall, don't have to update their position
+        if (this.world[move.getCol()][move.getCol()].character() == '#') {
+            return;
+        }
+
+        // swap tiles
+        this.world[this.playerLocation.getCol()][this.playerLocation.getRow()] = Tileset.FLOOR;
+        this.world[move.getCol()][move.getRow()] = Tileset.PLAYER;
+
+        this.playerLocation = move;
+    }
+
     private void solicitGameInput() {
-        
+        boolean endIO = false;
+        this.drawGameFrame();
+        while (!endIO) {
+            // pause for game tick
+            StdDraw.pause(gameClockCycle);
+
+            // detect mouse movement
+            this.drawGameGui();
+
+            // continue if no input detected
+            if (!StdDraw.hasNextKeyTyped()) {
+                continue;
+            }
+
+            // only unicode characters are valid; i.e. arrows keys would not work
+            char input = StdDraw.nextKeyTyped();
+            this.gameState.append(input);
+
+            // detect if game needs to end
+            String quitCmd = this.gameState.substring(this.gameState.length() - 2);
+            if (quitCmd.equals(":Q")) {
+                endIO = true;
+                continue;
+            }
+
+            // move character model
+            this.moveDirectionHelper(input);
+
+            // render world
+            this.drawGameFrame();
+        }
     }
 
     public static void main(String[] args) {
         Game game = new Game();
-        TETile[][] world = game.playWithInputString("123456");
-        game.ter.initialize(WIDTH, HEIGHT);
-        game.ter.renderFrame(world);
+//        TETile[][] world = game.playWithInputString("123456");
+//        game.ter.initialize(WIDTH, HEIGHT);
+//        game.ter.renderFrame(world);
+        game.playWithKeyboard();
     }
 }

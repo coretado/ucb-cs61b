@@ -4,6 +4,9 @@ public class PlayerLocation implements CoordinateBase {
     private int row;
     private int col;
 
+    public PlayerLocation() {
+    }
+
     public PlayerLocation(int row, int col) {
         this.row = row;
         this.col = col;
