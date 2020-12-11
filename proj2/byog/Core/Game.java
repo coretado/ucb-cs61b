@@ -25,6 +25,7 @@ public class Game {
     private TETile[][] world;
     private WorldGenerator worldGenerator;
     private PlayerLocation playerLocation;
+    private final String QUIT_COMMAND = ":Q";
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
@@ -85,7 +86,7 @@ public class Game {
                 this.solicitGameInput();
             }
         }
-
+        
         System.out.println("I'm out");
     }
 
@@ -123,11 +124,6 @@ public class Game {
     private void resetScreen() {
         StdDraw.clear();
         StdDraw.clear(Color.black);
-    }
-
-    private void updatePlayerLocation(int col, int row) {
-        this.playerLocation.setCol(col);
-        this.playerLocation.setRow(row);
     }
 
     private void drawMenuOptionsFrame() {
@@ -178,28 +174,26 @@ public class Game {
 
     // separated so game UI and game traversal are separate
     private void drawGameGui() {
-        this.resetScreen();
-
+        // prepare the "pen"
         StdDraw.setFont(this.standardFont);
         StdDraw.setPenColor(Color.white);
 
-        int mouseCol = ((int) StdDraw.mouseX());
-        int mouseRow = ((int) StdDraw.mouseY());
+        // -5 to account for padding
+        int mouseCol = ((int) StdDraw.mouseX()) - 5;
+        int mouseRow = ((int) StdDraw.mouseY()) - 5;
 
-        StdDraw.textLeft(1, this.internalHeight - 1, "( " + mouseCol + ", " + mouseRow + " )");
+        // only display a description if not "out of bounds"
+        if (mouseCol > -1 && mouseCol < WIDTH && mouseRow > -1 && mouseRow < HEIGHT) {
+            TETile hoverTile = this.world[mouseCol][mouseRow];
+            StdDraw.textLeft(1, this.internalHeight - 1, hoverTile.description());
+        }
 
-//        StdDraw.show();
-
-//        TETile hoverTile = this.world[mouseCol][mouseRow];
-//        if (hoverTile != null) {
-//            StdDraw.textLeft(1, this.internalHeight - 1, hoverTile.description());
-//        }
+        StdDraw.show();
     }
 
     private void drawGameFrame() {
         ter.renderFrame(this.world);
-//        this.drawGameGui();
-//        StdDraw.show();
+        this.drawGameGui();
     }
 
     private char solicitMenuOption() {
@@ -230,7 +224,7 @@ public class Game {
         StringBuilder sb = new StringBuilder();
         this.drawSeedInputFrame(sb.toString());
 
-        while (!endIO) {
+        while (true) {
             // pause for game tick
             StdDraw.pause(gameClockCycle);
 
@@ -246,8 +240,7 @@ public class Game {
 
             // continue is used to not show integers with stop command
             if (input == 'S') {
-                endIO = true;
-                continue;
+                break;
             }
 
             // draw input frame
@@ -293,9 +286,11 @@ public class Game {
     }
 
     private void solicitGameInput() {
-        boolean endIO = false;
+        // draw the initial game frame
         this.drawGameFrame();
-        while (!endIO) {
+
+        // gather user input
+        while (true) {
             // pause for game tick
             StdDraw.pause(gameClockCycle);
 
@@ -310,28 +305,24 @@ public class Game {
             // only unicode characters are valid; i.e. arrows keys would not work
             char input = StdDraw.nextKeyTyped();
             this.gameState.append(input);
-            System.out.println(input);
 
             // detect if game needs to end
-            String quitCmd = this.gameState.substring(this.gameState.length() - 2);
-            if (quitCmd.equals(":Q")) {
-                endIO = true;
-                continue;
+            if (this.gameState.substring(this.gameState.length() - 2).equals(QUIT_COMMAND)) {
+                break;
             }
 
             // move character model
             this.moveDirectionHelper(input);
-
-            // render worldW
-//            this.drawGameFrame();
         }
+
+        this.playing = false;
     }
 
     public static void main(String[] args) {
         Game game = new Game();
-//        TETile[][] world = game.playWithInputString("123456");
-//        game.ter.initialize(WIDTH, HEIGHT);
-//        game.ter.renderFrame(world);
         game.playWithKeyboard();
+        // TETile[][] world = game.playWithInputString("123456");
+        // game.ter.initialize(WIDTH, HEIGHT);
+        // game.ter.renderFrame(world);
     }
 }
