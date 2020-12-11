@@ -68,7 +68,7 @@ public class Game {
                     // gather user input
                     String gatherSeed = this.solicitNewGameSeedInput();
                     // strip N and S characters
-                    String seed = gatherSeed.substring(1, gatherSeed.length() - 1);
+                    String seed = gatherSeed.substring(0, gatherSeed.length() - 1);
                     // start game
                     this.worldGenerator = new WorldGenerator(WIDTH, HEIGHT, Long.parseLong(seed));
                     this.worldGenerator.generateWorld();
@@ -86,7 +86,7 @@ public class Game {
                 this.solicitGameInput();
             }
         }
-        
+
         System.out.println("I'm out");
     }
 
@@ -219,8 +219,6 @@ public class Game {
     }
 
     private String solicitNewGameSeedInput() {
-        // IO ends when character is "S"
-        boolean endIO = false;
         StringBuilder sb = new StringBuilder();
         this.drawSeedInputFrame(sb.toString());
 
@@ -233,13 +231,17 @@ public class Game {
                 continue;
             }
 
-            // assuming in good faith every input is either an integer or "S"
+            // grab number inputs
             char input = StdDraw.nextKeyTyped();
-            this.gameState.append(input);
-            sb.append(input);
+            if (input >= '0' && input <= '9') {
+                this.gameState.append(input);
+                sb.append(input);
+            }
 
-            // continue is used to not show integers with stop command
+            // stop seed input
             if (input == 'S') {
+                this.gameState.append(input);
+                sb.append(input);
                 break;
             }
 
