@@ -6,37 +6,35 @@ import byog.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.*;
+import java.io.*;
 
 public class Game {
+    /* static game environment_variables */
     TERenderer ter = new TERenderer();
-    /* Feel free to change the width and height. */
-    public static final int WIDTH = 35;
-    public static final int HEIGHT = 35;
-    /* game env variables */
+    private static final int WIDTH = 35;
+    private static final int HEIGHT = 35;
+    private static final int INTERNAL_WIDTH = WIDTH + 10;
+    private static final int INTERNAL_HEIGHT = HEIGHT + 10;
+    private final Font standardFont = new Font("Monaco", Font.BOLD, 16);
+    private final Font titleFont = new Font("Monaco", Font.BOLD, 30);
+    private final String QUIT_COMMAND = ":Q";
+
+    /* dynamic game environment_variables */
     private final int gameClockCycle = 17;
     private StringBuilder gameState = new StringBuilder();
     private boolean playing = false;
     private boolean quitgame = false;
     private boolean loadgame = false;
-    private int internalWidth;
-    private int internalHeight;
-    private final Font standardFont = new Font("Monaco", Font.BOLD, 16);
-    private final Font titleFont = new Font("Monaco", Font.BOLD, 30);
     private TETile[][] world;
     private WorldGenerator worldGenerator;
     private PlayerLocation playerLocation;
-    private final String QUIT_COMMAND = ":Q";
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
      */
     public void playWithKeyboard() {
-        // initialize internal env variables
-        this.internalHeight = HEIGHT + 10;
-        this.internalWidth = WIDTH + 10;
-
         // initialize world
-        this.ter.initialize(this.internalWidth, this.internalHeight, 5, 5);
+        this.ter.initialize(INTERNAL_WIDTH, INTERNAL_HEIGHT, 5, 5);
 
         // start game
         while (!this.quitgame) {
@@ -59,8 +57,9 @@ public class Game {
 
                 // user loading saved game
                 if (option == 'L') {
-                    // TODO: Decide if load game cycle is done here or in playing loop
+                    this.loadGameFromSaveState(this.loadGame());
                     this.loadgame = true;
+                    this.playing = true;
                 }
 
                 // user starting new game, collect seed input
@@ -84,6 +83,7 @@ public class Game {
             // start game loop
             while(this.playing) {
                 this.solicitGameInput();
+                this.saveGame(new GameState(this.gameState.toString()));
             }
         }
 
@@ -128,11 +128,11 @@ public class Game {
 
     private void drawMenuOptionsFrame() {
         // grab positions
-        int midWidth = this.internalWidth / 2;
-        int titleHeight = (int) (this.internalHeight * 0.8);
-        int newGameTextHeight = (int) (this.internalHeight * 0.65);
-        int loadGameTextHeight = (int) (this.internalHeight * 0.6);
-        int quitGameTextHeight = (int) (this.internalHeight * 0.55);
+        int midWidth = INTERNAL_WIDTH / 2;
+        int titleHeight = (int) (INTERNAL_HEIGHT * 0.8);
+        int newGameTextHeight = (int) (INTERNAL_HEIGHT * 0.65);
+        int loadGameTextHeight = (int) (INTERNAL_HEIGHT * 0.6);
+        int quitGameTextHeight = (int) (INTERNAL_HEIGHT * 0.55);
 
         this.resetScreen();
 
@@ -153,9 +153,9 @@ public class Game {
 
     private void drawSeedInputFrame(String seed) {
         // grab positions
-        int midWidth = this.internalWidth / 2;
-        int instructionHeight = (int) (this.internalHeight * 0.8);
-        int inputHeight = (int) (this.internalHeight * 0.55);
+        int midWidth = INTERNAL_WIDTH / 2;
+        int instructionHeight = (int) (INTERNAL_HEIGHT * 0.8);
+        int inputHeight = (int) (INTERNAL_WIDTH * 0.55);
 
         this.resetScreen();
 
@@ -185,7 +185,7 @@ public class Game {
         // only display a description if not "out of bounds"
         if (mouseCol > -1 && mouseCol < WIDTH && mouseRow > -1 && mouseRow < HEIGHT) {
             TETile hoverTile = this.world[mouseCol][mouseRow];
-            StdDraw.textLeft(1, this.internalHeight - 1, hoverTile.description());
+            StdDraw.textLeft(1, INTERNAL_HEIGHT - 1, hoverTile.description());
         }
 
         StdDraw.show();
@@ -318,6 +318,82 @@ public class Game {
         }
 
         this.playing = false;
+    }
+
+    private String loadGame() {
+        File file = new File("./save.txt");
+
+        if (file.exists()) {
+            try {
+                FileInputStream fs = new FileInputStream(file);
+                ObjectInputStream os = new ObjectInputStream(fs);
+                GameState gameState = (GameState) os.readObject();
+                os.close();
+                return gameState.getGameState();
+            } catch (FileNotFoundException e) {
+                System.out.println("There is no save.txt file");
+                System.exit(0);
+            } catch (IOException e) {
+                System.out.println(e);
+                System.exit(0);
+            } catch (ClassNotFoundException e) {
+                System.out.println("Class GameState not found");
+            }
+        }
+
+        return "";
+    }
+
+    private void saveGame(GameState gameState) {
+        File file = new File("./save.txt");
+        try {
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            FileOutputStream fs = new FileOutputStream(file);
+            ObjectOutputStream os = new ObjectOutputStream(fs);
+            os.writeObject(gameState);
+            os.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("File save.txt not found");
+            System.exit(0);
+        } catch (IOException e) {
+            System.out.println(e);
+            System.exit(0);
+        }
+    }
+
+    private void loadGameFromSaveState(String gameState) {
+        // create seed, start after 'N' character
+        StringBuilder gameStateSeed = new StringBuilder();
+        int stringCounter = 1;
+
+        // parse seed from string since we save game state as a string
+        while (gameState.charAt(stringCounter) != 'S') {
+            gameStateSeed.append(gameState.charAt(stringCounter));
+            stringCounter += 1;
+        }
+        Long seed = Long.parseLong(gameStateSeed.toString());
+
+        // recreate base world using fetched seed
+        this.worldGenerator = new WorldGenerator(WIDTH, HEIGHT, seed);
+        this.worldGenerator.generateWorld();
+        this.world = this.worldGenerator.getGrid();
+        this.playerLocation = this.worldGenerator.randomlyPlacePlayerModel();
+
+        // fetch previous actions and alter game state at the same time
+        StringBuilder actionState = new StringBuilder();
+        while (gameState.charAt(stringCounter) != ':' && gameState.charAt(stringCounter) != 'Q') {
+            // fetch action
+            actionState.append(gameState.charAt(stringCounter));
+            // perform action
+            this.moveDirectionHelper(gameState.charAt(stringCounter));
+            // increment counter
+            stringCounter += 1;
+        }
+
+        // game up to date with loaded state, change game engine gameState to be the loaded state and actions
+        this.gameState = new StringBuilder("N" + gameStateSeed.toString() + "S" + actionState.toString());
     }
 
     public static void main(String[] args) {
