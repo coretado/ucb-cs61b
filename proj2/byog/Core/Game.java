@@ -83,7 +83,6 @@ public class Game {
             // start game loop
             while(this.playing) {
                 this.solicitGameInput();
-                this.saveGame(new GameState(this.gameState.toString()));
             }
         }
 
@@ -103,22 +102,16 @@ public class Game {
      * @return the 2D TETile[][] representing the state of the world
      */
     public TETile[][] playWithInputString(String input) {
-        // TODO: Fill out this method to run the game using the input passed in,
-        // and return a 2D tile representation of the world that would have been
-        // drawn if the same inputs had been given to playWithKeyboard().
-        StringBuilder playerInput = new StringBuilder();
-        StringBuilder seedString = new StringBuilder();
-        for (int i = 0; i < input.length(); i += 1) {
-            if (Character.isDigit(input.charAt(i))) {
-                seedString.append(input.charAt(i));
-            } else {
-                playerInput.append(input.charAt(i));
-            }
+        // initialize world
+        this.ter.initialize(INTERNAL_WIDTH, INTERNAL_HEIGHT, 5, 5);
+
+        if (input.charAt(0) == 'N') {
+            this.playGameFromKeyboardInput(input);
+            return this.world;
         }
 
-        WorldGenerator worldGenerator = new WorldGenerator(WIDTH, HEIGHT, Long.parseLong(seedString.toString()));
-        worldGenerator.generateWorld();
-        return worldGenerator.getGrid();
+        this.loadGameFromSaveStateKeyboardInput(input);
+        return this.world;
     }
 
     private void resetScreen() {
@@ -310,6 +303,7 @@ public class Game {
 
             // detect if game needs to end
             if (this.gameState.substring(this.gameState.length() - 2).equals(QUIT_COMMAND)) {
+                this.saveGame(new GameState(this.gameState.toString()));
                 break;
             }
 
@@ -363,6 +357,82 @@ public class Game {
         }
     }
 
+    private void playGameFromKeyboardInput(String input) {
+        StringBuilder sb = new StringBuilder();
+        int stringCounter = 1;
+        while (input.charAt(stringCounter) != 'S') {
+            sb.append(input.charAt(stringCounter));
+            stringCounter += 1;
+        }
+        stringCounter += 1;
+        Long seed = Long.parseLong(sb.toString());
+        this.worldGenerator = new WorldGenerator(WIDTH, HEIGHT, seed);
+        this.worldGenerator.generateWorld();
+        this.playerLocation = this.worldGenerator.randomlyPlacePlayerModel();
+        this.gameState = new StringBuilder("N" + seed + "S");
+
+        while (stringCounter < input.length()) {
+            // check for the quit action
+            if (
+                    input.charAt(stringCounter) == ':' &&
+                            stringCounter + 1 < input.length() &&
+                            input.charAt(stringCounter + 1) == 'Q'
+            ) {
+                this.gameState.append(QUIT_COMMAND);
+                break;
+            }
+            this.moveDirectionHelper(input.charAt(stringCounter));
+            this.gameState.append(input.charAt(stringCounter));
+            stringCounter += 1;
+        }
+
+        if (this.gameState.substring(this.gameState.length() - 2).equals(QUIT_COMMAND)) {
+            this.saveGame(new GameState(this.gameState.toString()));
+        }
+    }
+
+    private void loadGameFromSaveStateKeyboardInput(String gameState) {
+        String previousGameState = this.loadGame();
+        StringBuilder sb = new StringBuilder();
+        int previousStringCounter = 1;
+        while (previousGameState.charAt(previousStringCounter) != 'S') {
+            sb.append(previousGameState.charAt(previousStringCounter));
+            previousStringCounter += 1;
+        }
+        previousStringCounter += 1;
+        Long seed = Long.parseLong(sb.toString());
+        this.worldGenerator = new WorldGenerator(WIDTH, HEIGHT, seed);
+        this.worldGenerator.generateWorld();
+        this.world = this.worldGenerator.getGrid();
+        this.playerLocation = this.worldGenerator.randomlyPlacePlayerModel();
+
+        while (previousStringCounter < previousGameState.length()) {
+            this.moveDirectionHelper(previousGameState.charAt(previousStringCounter));
+            previousStringCounter += 1;
+        }
+
+        int stringCounter = 1;
+
+        while (stringCounter < gameState.length()) {
+            // check for the quit action
+            if (
+                    gameState.charAt(stringCounter) == ':' &&
+                            stringCounter + 1 < gameState.length() &&
+                            gameState.charAt(stringCounter + 1) == 'Q'
+            ) {
+                this.gameState.append(QUIT_COMMAND);
+                break;
+            }
+            this.moveDirectionHelper(gameState.charAt(stringCounter));
+            this.gameState.append(gameState.charAt(stringCounter));
+            stringCounter += 1;
+        }
+
+        if (this.gameState.length() > 2 && this.gameState.substring(this.gameState.length() - 2).equals(":Q")) {
+            this.saveGame(new GameState(this.gameState.toString()));
+        }
+    }
+
     private void loadGameFromSaveState(String gameState) {
         // create seed, start after 'N' character
         StringBuilder gameStateSeed = new StringBuilder();
@@ -374,6 +444,8 @@ public class Game {
             stringCounter += 1;
         }
         Long seed = Long.parseLong(gameStateSeed.toString());
+        // skip the first 'S' character;
+        stringCounter += 1;
 
         // recreate base world using fetched seed
         this.worldGenerator = new WorldGenerator(WIDTH, HEIGHT, seed);
@@ -383,7 +455,16 @@ public class Game {
 
         // fetch previous actions and alter game state at the same time
         StringBuilder actionState = new StringBuilder();
-        while (gameState.charAt(stringCounter) != ':' && gameState.charAt(stringCounter) != 'Q') {
+        while (stringCounter < gameState.length()) {
+            // check for the quit action
+            if (
+                    gameState.charAt(stringCounter) == ':' &&
+                    stringCounter + 1 < gameState.length() &&
+                    gameState.charAt(stringCounter + 1) == 'Q'
+            ) {
+                actionState.append(QUIT_COMMAND);
+                break;
+            }
             // fetch action
             actionState.append(gameState.charAt(stringCounter));
             // perform action
@@ -398,9 +479,10 @@ public class Game {
 
     public static void main(String[] args) {
         Game game = new Game();
-        game.playWithKeyboard();
-        // TETile[][] world = game.playWithInputString("123456");
-        // game.ter.initialize(WIDTH, HEIGHT);
-        // game.ter.renderFrame(world);
+//        game.playWithKeyboard();
+         TETile[][] world = game.playWithInputString("N123SWWW:Q");
+//        TETile[][] world = game.playWithInputString("LWWW:Q");
+//        TETile[][] world = game.playWithInputString("L");
+        game.ter.renderFrame(world);
     }
 }
