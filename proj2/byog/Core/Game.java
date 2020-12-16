@@ -15,19 +15,19 @@ public class Game {
     private static final int HEIGHT = 35;
     private static final int INTERNAL_WIDTH = WIDTH + 10;
     private static final int INTERNAL_HEIGHT = HEIGHT + 10;
+    private static final int MID_WIDTH = INTERNAL_WIDTH / 2;
     private final Font standardFont = new Font("Monaco", Font.BOLD, 16);
     private final Font titleFont = new Font("Monaco", Font.BOLD, 30);
     private final String QUIT_COMMAND = ":Q";
 
     /* dynamic game environment_variables */
     private final int gameClockCycle = 17;
-    private StringBuilder gameState = new StringBuilder();
+    private StringBuilder gameState;
+    private PlayerLocation playerLocation;
     private boolean playing = false;
     private boolean quitgame = false;
-    private boolean loadgame = false;
     private TETile[][] world;
     private WorldGenerator worldGenerator;
-    private PlayerLocation playerLocation;
 
     /**
      * Method used for playing a fresh game. The game should start from the main menu.
@@ -47,9 +47,6 @@ public class Game {
                 // receive player option
                 char option = this.solicitMenuOption();
 
-                // enqueue player move
-                this.gameState.append(option);
-
                 // user quit
                 if (option == 'Q') {
                     this.quitgame = true;
@@ -58,23 +55,13 @@ public class Game {
                 // user loading saved game
                 if (option == 'L') {
                     this.loadGameFromSaveState(this.loadGame());
-                    this.loadgame = true;
                     this.playing = true;
                 }
 
                 // user starting new game, collect seed input
                 if (option == 'N') {
-                    // gather user input
-                    String gatherSeed = this.solicitNewGameSeedInput();
-                    // strip N and S characters
-                    String seed = gatherSeed.substring(0, gatherSeed.length() - 1);
                     // start game
-                    this.worldGenerator = new WorldGenerator(WIDTH, HEIGHT, Long.parseLong(seed));
-                    this.worldGenerator.generateWorld();
-                    this.world = this.worldGenerator.getGrid();
-                    // randomly place character in a room
-                    this.playerLocation = this.worldGenerator.randomlyPlacePlayerModel();
-                    System.out.println("player location at start: (" + this.playerLocation.getCol() + ", " + this.playerLocation.getRow() + ")");
+                    this.instantiateGameWorldForPlay(Long.parseLong(this.solicitNewGameSeedInput()));
                     // start the game
                     this.playing = true;
                 }
@@ -105,12 +92,15 @@ public class Game {
         // initialize world
         this.ter.initialize(INTERNAL_WIDTH, INTERNAL_HEIGHT, 5, 5);
 
+        // the detection of a new game or a load game are under the assumption an auto grader will
+        // only input valid strings starting with 'N' or 'L' - that is to say this method would not be
+        // robust against a user in the real world
         if (input.charAt(0) == 'N') {
             this.playGameFromKeyboardInput(input);
             return this.world;
         }
 
-        this.loadGameFromSaveStateKeyboardInput(input);
+        this.loadThenPlayGameFromKeyboardInput(input);
         return this.world;
     }
 
@@ -121,7 +111,6 @@ public class Game {
 
     private void drawMenuOptionsFrame() {
         // grab positions
-        int midWidth = INTERNAL_WIDTH / 2;
         int titleHeight = (int) (INTERNAL_HEIGHT * 0.8);
         int newGameTextHeight = (int) (INTERNAL_HEIGHT * 0.65);
         int loadGameTextHeight = (int) (INTERNAL_HEIGHT * 0.6);
@@ -132,13 +121,13 @@ public class Game {
         // Set Title Text
         StdDraw.setFont(this.titleFont);
         StdDraw.setPenColor(Color.white);
-        StdDraw.text(midWidth, titleHeight, "CS61B Roguelike");
+        StdDraw.text(MID_WIDTH, titleHeight, "CS61B Roguelike");
 
         // Set Options Text
         StdDraw.setFont(this.standardFont);
-        StdDraw.text(midWidth, newGameTextHeight, "New Game (N)");
-        StdDraw.text(midWidth, loadGameTextHeight, "Load Game (L)");
-        StdDraw.text(midWidth, quitGameTextHeight, "Quit (Q)");
+        StdDraw.text(MID_WIDTH, newGameTextHeight, "New Game (N)");
+        StdDraw.text(MID_WIDTH, loadGameTextHeight, "Load Game (L)");
+        StdDraw.text(MID_WIDTH, quitGameTextHeight, "Quit (Q)");
 
         // Show the world the menu. hello, world.
         StdDraw.show();
@@ -146,7 +135,6 @@ public class Game {
 
     private void drawSeedInputFrame(String seed) {
         // grab positions
-        int midWidth = INTERNAL_WIDTH / 2;
         int instructionHeight = (int) (INTERNAL_HEIGHT * 0.8);
         int inputHeight = (int) (INTERNAL_WIDTH * 0.55);
 
@@ -155,11 +143,11 @@ public class Game {
         // set instruction text
         StdDraw.setFont(this.titleFont);
         StdDraw.setPenColor(Color.white);
-        StdDraw.text(midWidth, instructionHeight, "Enter seed:");
+        StdDraw.text(MID_WIDTH, instructionHeight, "Enter seed:");
 
         // set user input
         StdDraw.setFont(this.standardFont);
-        StdDraw.text(midWidth, inputHeight, seed);
+        StdDraw.text(MID_WIDTH, inputHeight, seed);
 
         // hello, world
         StdDraw.show();
@@ -227,14 +215,11 @@ public class Game {
             // grab number inputs
             char input = StdDraw.nextKeyTyped();
             if (input >= '0' && input <= '9') {
-                this.gameState.append(input);
                 sb.append(input);
             }
 
             // stop seed input
             if (input == 'S') {
-                this.gameState.append(input);
-                sb.append(input);
                 break;
             }
 
@@ -268,6 +253,7 @@ public class Game {
             move.setRow(this.playerLocation.getRow());
             move.setCol(this.playerLocation.getCol() + 1);
         }
+
         // if player attempts to move into a wall, don't have to update their position
         if (this.world[move.getCol()][move.getRow()].character() == '#') {
             return;
@@ -357,132 +343,150 @@ public class Game {
         }
     }
 
+    private void instantiateGameWorldForPlay(Long seed) {
+        this.worldGenerator = new WorldGenerator(WIDTH, HEIGHT, seed);
+        this.worldGenerator.generateWorld();
+        this.world = this.worldGenerator.getGrid();
+        this.playerLocation = this.worldGenerator.randomlyPlacePlayerModel();
+        this.gameState = new StringBuilder("N" + seed + "S");
+    }
+
+    private boolean scanPlayerActionForQuitCommand(int counter, String input) {
+        return (input.charAt(counter) == ':' && counter + 1 < input.length() && input.charAt(counter + 1) == 'Q');
+    }
+
     private void playGameFromKeyboardInput(String input) {
+        // starting variables for parsing seed
         StringBuilder sb = new StringBuilder();
         int stringCounter = 1;
+
+        // parse seed
         while (input.charAt(stringCounter) != 'S') {
             sb.append(input.charAt(stringCounter));
             stringCounter += 1;
         }
-        stringCounter += 1;
-        Long seed = Long.parseLong(sb.toString());
-        this.worldGenerator = new WorldGenerator(WIDTH, HEIGHT, seed);
-        this.worldGenerator.generateWorld();
-        this.playerLocation = this.worldGenerator.randomlyPlacePlayerModel();
-        this.gameState = new StringBuilder("N" + seed + "S");
 
+        // move counter past the 'S' character
+        stringCounter += 1;
+
+        this.instantiateGameWorldForPlay(Long.parseLong(sb.toString()));
+
+        // run through input actions
         while (stringCounter < input.length()) {
             // check for the quit action
-            if (
-                    input.charAt(stringCounter) == ':' &&
-                            stringCounter + 1 < input.length() &&
-                            input.charAt(stringCounter + 1) == 'Q'
-            ) {
+            if (this.scanPlayerActionForQuitCommand(stringCounter, input)) {
                 this.gameState.append(QUIT_COMMAND);
                 break;
             }
+            // move player
             this.moveDirectionHelper(input.charAt(stringCounter));
+            // mutate game state
             this.gameState.append(input.charAt(stringCounter));
+            // increment position of input scan
             stringCounter += 1;
         }
 
+        // if user had a save command, make sure to save the game
         if (this.gameState.substring(this.gameState.length() - 2).equals(QUIT_COMMAND)) {
             this.saveGame(new GameState(this.gameState.toString()));
         }
     }
 
-    private void loadGameFromSaveStateKeyboardInput(String gameState) {
+    private void loadThenPlayGameFromKeyboardInput(String input) {
+        // fetch previous game state
         String previousGameState = this.loadGame();
+
+        //starting variables for parsing seed
         StringBuilder sb = new StringBuilder();
         int previousStringCounter = 1;
+
+        // parse seed
         while (previousGameState.charAt(previousStringCounter) != 'S') {
             sb.append(previousGameState.charAt(previousStringCounter));
             previousStringCounter += 1;
         }
-        previousStringCounter += 1;
-        Long seed = Long.parseLong(sb.toString());
-        this.worldGenerator = new WorldGenerator(WIDTH, HEIGHT, seed);
-        this.worldGenerator.generateWorld();
-        this.world = this.worldGenerator.getGrid();
-        this.playerLocation = this.worldGenerator.randomlyPlacePlayerModel();
 
+        // move counter past the 'S' character
+        previousStringCounter += 1;
+
+        this.instantiateGameWorldForPlay(Long.parseLong(sb.toString()));
+
+        // run through input actions
         while (previousStringCounter < previousGameState.length()) {
+            // check for quit command; because this is previous game state, we just break loop and 'present' game
+            if (this.scanPlayerActionForQuitCommand(previousStringCounter, previousGameState)) {
+                break;
+            }
+            // move player
             this.moveDirectionHelper(previousGameState.charAt(previousStringCounter));
+            // mutate game state
+            this.gameState.append(previousGameState.charAt(previousStringCounter));
+            // increment position of input scan
             previousStringCounter += 1;
         }
 
+        // string counter starts at 1 to skip 'L'
         int stringCounter = 1;
 
+        // run through new input actions
         while (stringCounter < gameState.length()) {
-            // check for the quit action
-            if (
-                    gameState.charAt(stringCounter) == ':' &&
-                            stringCounter + 1 < gameState.length() &&
-                            gameState.charAt(stringCounter + 1) == 'Q'
-            ) {
+            // check for quit command
+            if (this.scanPlayerActionForQuitCommand(stringCounter, input)) {
                 this.gameState.append(QUIT_COMMAND);
                 break;
             }
+            // move player
             this.moveDirectionHelper(gameState.charAt(stringCounter));
+            // mutate game state
             this.gameState.append(gameState.charAt(stringCounter));
+            // increment position of input scan
             stringCounter += 1;
         }
 
+        // if user had a save command, make sure to save the game
         if (this.gameState.length() > 2 && this.gameState.substring(this.gameState.length() - 2).equals(":Q")) {
             this.saveGame(new GameState(this.gameState.toString()));
         }
     }
 
-    private void loadGameFromSaveState(String gameState) {
+    private void loadGameFromSaveState(String input) {
         // create seed, start after 'N' character
         StringBuilder gameStateSeed = new StringBuilder();
         int stringCounter = 1;
 
         // parse seed from string since we save game state as a string
-        while (gameState.charAt(stringCounter) != 'S') {
-            gameStateSeed.append(gameState.charAt(stringCounter));
+        while (input.charAt(stringCounter) != 'S') {
+            gameStateSeed.append(input.charAt(stringCounter));
             stringCounter += 1;
         }
-        Long seed = Long.parseLong(gameStateSeed.toString());
+
         // skip the first 'S' character;
         stringCounter += 1;
 
         // recreate base world using fetched seed
-        this.worldGenerator = new WorldGenerator(WIDTH, HEIGHT, seed);
-        this.worldGenerator.generateWorld();
-        this.world = this.worldGenerator.getGrid();
-        this.playerLocation = this.worldGenerator.randomlyPlacePlayerModel();
+        this.instantiateGameWorldForPlay(Long.parseLong(gameStateSeed.toString()));
 
-        // fetch previous actions and alter game state at the same time
-        StringBuilder actionState = new StringBuilder();
-        while (stringCounter < gameState.length()) {
+        // re-run player actions
+        while (stringCounter < input.length()) {
             // check for the quit action
-            if (
-                    gameState.charAt(stringCounter) == ':' &&
-                    stringCounter + 1 < gameState.length() &&
-                    gameState.charAt(stringCounter + 1) == 'Q'
-            ) {
-                actionState.append(QUIT_COMMAND);
+            if (this.scanPlayerActionForQuitCommand(stringCounter, input)) {
                 break;
             }
             // fetch action
-            actionState.append(gameState.charAt(stringCounter));
+            this.gameState.append(input.charAt(stringCounter));
             // perform action
-            this.moveDirectionHelper(gameState.charAt(stringCounter));
+            this.moveDirectionHelper(input.charAt(stringCounter));
             // increment counter
             stringCounter += 1;
         }
-
-        // game up to date with loaded state, change game engine gameState to be the loaded state and actions
-        this.gameState = new StringBuilder("N" + gameStateSeed.toString() + "S" + actionState.toString());
     }
 
     public static void main(String[] args) {
         Game game = new Game();
-//        game.playWithKeyboard();
-         TETile[][] world = game.playWithInputString("N123SWWW:Q");
+        game.playWithKeyboard();
+//         TETile[][] world = game.playWithInputString("N123SWWW:Q");
 //        TETile[][] world = game.playWithInputString("LWWW:Q");
 //        TETile[][] world = game.playWithInputString("L");
-        game.ter.renderFrame(world);
+//        game.ter.renderFrame(world);
     }
 }
