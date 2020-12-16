@@ -429,16 +429,16 @@ public class Game {
         int stringCounter = 1;
 
         // run through new input actions
-        while (stringCounter < gameState.length()) {
+        while (stringCounter < input.length()) {
             // check for quit command
             if (this.scanPlayerActionForQuitCommand(stringCounter, input)) {
                 this.gameState.append(QUIT_COMMAND);
                 break;
             }
             // move player
-            this.moveDirectionHelper(gameState.charAt(stringCounter));
+            this.moveDirectionHelper(input.charAt(stringCounter));
             // mutate game state
-            this.gameState.append(gameState.charAt(stringCounter));
+            this.gameState.append(input.charAt(stringCounter));
             // increment position of input scan
             stringCounter += 1;
         }
@@ -482,11 +482,25 @@ public class Game {
     }
 
     public static void main(String[] args) {
-        Game game = new Game();
-        game.playWithKeyboard();
-//         TETile[][] world = game.playWithInputString("N123SWWW:Q");
-//        TETile[][] world = game.playWithInputString("LWWW:Q");
-//        TETile[][] world = game.playWithInputString("L");
-//        game.ter.renderFrame(world);
+        // Game game = new Game();
+        // game.playWithKeyboard();
+        // TETile[][] world = game.playWithInputString("N999SDDDWWWDDD");
+
+        // group one
+        // TETile[][] world = game.playWithInputString("N999SDDD:Q");
+        // TETile[][] world = game.playWithInputString("LWWWDDD");
+
+        // group two
+        // TETile[][] world = game.playWithInputString("N999SDDD:Q");
+        // TETile[][] world = game.playWithInputString("LWWW:Q");
+        // TETile[][] world = game.playWithInputString("LDDD:Q");
+
+        // group three
+        // TETile[][] world = game.playWithInputString("N999SDDD:Q");
+        // TETile[][] world = game.playWithInputString("L:Q");
+        // TETile[][] world = game.playWithInputString("L:Q");
+        // TETile[][] world = game.playWithInputString("LWWWDDD");
+
+        // game.ter.renderFrame(world);
     }
 }
