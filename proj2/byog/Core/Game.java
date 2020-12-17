@@ -100,7 +100,7 @@ public class Game {
         // the detection of a new game or a load game are under the assumption an auto grader will
         // only input valid strings starting with 'N' or 'L' - that is to say this method
         // would not be robust against a user in the real world
-        if (input.charAt(0) == 'N') {
+        if (Character.toUpperCase(input.charAt(0)) == 'N') {
             this.playGameFromKeyboardInput(input);
             return this.world;
         }
@@ -194,7 +194,7 @@ public class Game {
                 continue;
             }
 
-            userInput = StdDraw.nextKeyTyped();
+            userInput = Character.toUpperCase(StdDraw.nextKeyTyped());
 
             if (userInput == 'Q' || userInput == 'L' || userInput == 'N') {
                 break;
@@ -224,7 +224,7 @@ public class Game {
             }
 
             // stop seed input
-            if (input == 'S') {
+            if (Character.toUpperCase(input) == 'S') {
                 break;
             }
 
@@ -289,7 +289,7 @@ public class Game {
             }
 
             // only unicode characters are valid; i.e. arrows keys would not work
-            char input = StdDraw.nextKeyTyped();
+            char input = Character.toUpperCase(StdDraw.nextKeyTyped());
             this.gameState.append(input);
 
             // detect if game needs to end
@@ -360,7 +360,7 @@ public class Game {
         return (
             input.charAt(counter) == ':'
             && counter + 1 < input.length()
-            && input.charAt(counter + 1) == 'Q');
+            && Character.toUpperCase(input.charAt(counter + 1)) == 'Q');
     }
 
     private void playGameFromKeyboardInput(String input) {
@@ -369,7 +369,7 @@ public class Game {
         int stringCounter = 1;
 
         // parse seed
-        while (input.charAt(stringCounter) != 'S') {
+        while (Character.toUpperCase(input.charAt(stringCounter)) != 'S') {
             sb.append(input.charAt(stringCounter));
             stringCounter += 1;
         }
@@ -386,10 +386,12 @@ public class Game {
                 this.gameState.append(QUIT_COMMAND);
                 break;
             }
+            // grab uppercase char
+            char upperCaseInput = Character.toUpperCase(input.charAt(stringCounter));
             // move player
-            this.moveDirectionHelper(input.charAt(stringCounter));
+            this.moveDirectionHelper(upperCaseInput);
             // mutate game state
-            this.gameState.append(input.charAt(stringCounter));
+            this.gameState.append(upperCaseInput);
             // increment position of input scan
             stringCounter += 1;
         }
@@ -409,7 +411,9 @@ public class Game {
         int previousStringCounter = 1;
 
         // parse seed
-        while (previousGameState.charAt(previousStringCounter) != 'S') {
+        while (
+            Character.toUpperCase(previousGameState.charAt(previousStringCounter)) != 'S'
+        ) {
             sb.append(previousGameState.charAt(previousStringCounter));
             previousStringCounter += 1;
         }
@@ -426,10 +430,13 @@ public class Game {
             if (this.scanPlayerActionForQuitCommand(previousStringCounter, previousGameState)) {
                 break;
             }
+            // grab uppercase char
+            char upperCaseInput = Character
+                .toUpperCase(previousGameState.charAt(previousStringCounter));
             // move player
-            this.moveDirectionHelper(previousGameState.charAt(previousStringCounter));
+            this.moveDirectionHelper(upperCaseInput);
             // mutate game state
-            this.gameState.append(previousGameState.charAt(previousStringCounter));
+            this.gameState.append(upperCaseInput);
             // increment position of input scan
             previousStringCounter += 1;
         }
@@ -444,17 +451,19 @@ public class Game {
                 this.gameState.append(QUIT_COMMAND);
                 break;
             }
+            // grab uppercase char
+            char upperCaseInput = Character.toUpperCase(input.charAt(stringCounter));
             // move player
-            this.moveDirectionHelper(input.charAt(stringCounter));
+            this.moveDirectionHelper(upperCaseInput);
             // mutate game state
-            this.gameState.append(input.charAt(stringCounter));
+            this.gameState.append(upperCaseInput);
             // increment position of input scan
             stringCounter += 1;
         }
 
         // if user had a save command, make sure to save the game
         if (this.gameState.length() > 2
-            && this.gameState.substring(this.gameState.length() - 2).equals(":Q")
+            && this.gameState.substring(this.gameState.length() - 2).equals(QUIT_COMMAND)
         ) {
             this.saveGame(new GameState(this.gameState.toString()));
         }
@@ -483,10 +492,12 @@ public class Game {
             if (this.scanPlayerActionForQuitCommand(stringCounter, input)) {
                 break;
             }
+            // grab uppercase char
+            char upperCaseInput = Character.toUpperCase(input.charAt(stringCounter));
             // fetch action
-            this.gameState.append(input.charAt(stringCounter));
+            this.gameState.append(upperCaseInput);
             // perform action
-            this.moveDirectionHelper(input.charAt(stringCounter));
+            this.moveDirectionHelper(upperCaseInput);
             // increment counter
             stringCounter += 1;
         }
@@ -503,15 +514,15 @@ public class Game {
         // TETile[][] world = game.playWithInputString("LWWWDDD");
 
         // group two
-        // TETile[][] world = game.playWithInputString("N999SDDD:Q");
+        // TETile[][] world = game.playWithInputString("n999sddd:q");
         // TETile[][] world = game.playWithInputString("LWWW:Q");
-        // TETile[][] world = game.playWithInputString("LDDD:Q");
+        // TETile[][] world = game.playWithInputString("lddd:q");
 
         // group three
-        // TETile[][] world = game.playWithInputString("N999SDDD:Q");
-        // TETile[][] world = game.playWithInputString("L:Q");
-        // TETile[][] world = game.playWithInputString("L:Q");
-        // TETile[][] world = game.playWithInputString("LWWWDDD");
+        // TETile[][] world = game.playWithInputString("N999SddD:q");
+        // TETile[][] world = game.playWithInputString("l:Q");
+        // TETile[][] world = game.playWithInputString("l:q");
+        // TETile[][] world = game.playWithInputString("LwWwDdd");
 
         // game.ter.renderFrame(world);
     }
