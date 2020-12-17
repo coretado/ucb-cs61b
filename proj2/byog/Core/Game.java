@@ -97,9 +97,6 @@ public class Game {
      * @return the 2D TETile[][] representing the state of the world
      */
     public TETile[][] playWithInputString(String input) {
-        // initialize world
-        this.ter.initialize(INTERNAL_WIDTH, INTERNAL_HEIGHT, 5, 5);
-
         // the detection of a new game or a load game are under the assumption an auto grader will
         // only input valid strings starting with 'N' or 'L' - that is to say this method
         // would not be robust against a user in the real world
@@ -315,9 +312,9 @@ public class Game {
             try {
                 FileInputStream fs = new FileInputStream(file);
                 ObjectInputStream os = new ObjectInputStream(fs);
-                GameState gameState = (GameState) os.readObject();
+                GameState gs = (GameState) os.readObject();
                 os.close();
-                return gameState.getGameState();
+                return gs.getGameState();
             } catch (FileNotFoundException e) {
                 System.out.println("There is no save.txt file");
                 System.exit(0);
@@ -332,7 +329,7 @@ public class Game {
         return "";
     }
 
-    private void saveGame(GameState gameState) {
+    private void saveGame(GameState gs) {
         File file = new File("./save.txt");
         try {
             if (!file.exists()) {
@@ -340,7 +337,7 @@ public class Game {
             }
             FileOutputStream fs = new FileOutputStream(file);
             ObjectOutputStream os = new ObjectOutputStream(fs);
-            os.writeObject(gameState);
+            os.writeObject(gs);
             os.close();
         } catch (FileNotFoundException e) {
             System.out.println("File save.txt not found");
@@ -498,6 +495,7 @@ public class Game {
     public static void main(String[] args) {
         // Game game = new Game();
         // game.playWithKeyboard();
+        // game.ter.initialize(WIDTH, HEIGHT);
         // TETile[][] world = game.playWithInputString("N999SDDDWWWDDD");
 
         // group one

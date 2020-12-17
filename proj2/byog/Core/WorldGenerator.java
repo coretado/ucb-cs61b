@@ -95,8 +95,8 @@ public class WorldGenerator {
         return ((float) this.area / (this.cols * this.rows)) >= 0.65;
     }
 
-    private void addArea(int area) {
-        this.area += area;
+    private void addArea(int a) {
+        this.area += a;
     }
 
     private void registerRoom(Room room) {
@@ -379,13 +379,13 @@ public class WorldGenerator {
     public PlayerLocation randomlyPlacePlayerModel() {
         int selection = this.seedGen.nextInt(this.rooms.size());
         Room selected = null;
-        Iterator<Room> rooms = this.rooms.iterator();
-        for (int i = 0; rooms.hasNext(); i += 1) {
+        Iterator<Room> roomIterator = this.rooms.iterator();
+        for (int i = 0; roomIterator.hasNext(); i += 1) {
             if (i == selection) {
-                selected = rooms.next();
+                selected = roomIterator.next();
                 break;
             }
-            rooms.next();
+            roomIterator.next();
         }
         assert selected != null;
         // plus one is to account for the padding used in a room for walls
