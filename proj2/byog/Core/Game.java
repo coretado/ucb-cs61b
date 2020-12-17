@@ -5,8 +5,15 @@ import byog.TileEngine.TETile;
 import byog.TileEngine.Tileset;
 import edu.princeton.cs.introcs.StdDraw;
 
-import java.awt.*;
-import java.io.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 public class Game {
     /* static game environment_variables */
@@ -61,14 +68,15 @@ public class Game {
                 // user starting new game, collect seed input
                 if (option == 'N') {
                     // start game
-                    this.instantiateGameWorldForPlay(Long.parseLong(this.solicitNewGameSeedInput()));
+                    this.instantiateGameWorldForPlay(
+                        Long.parseLong(this.solicitNewGameSeedInput()));
                     // start the game
                     this.playing = true;
                 }
             }
 
             // start game loop
-            while(this.playing) {
+            while (this.playing) {
                 this.solicitGameInput();
             }
         }
@@ -93,8 +101,8 @@ public class Game {
         this.ter.initialize(INTERNAL_WIDTH, INTERNAL_HEIGHT, 5, 5);
 
         // the detection of a new game or a load game are under the assumption an auto grader will
-        // only input valid strings starting with 'N' or 'L' - that is to say this method would not be
-        // robust against a user in the real world
+        // only input valid strings starting with 'N' or 'L' - that is to say this method
+        // would not be robust against a user in the real world
         if (input.charAt(0) == 'N') {
             this.playGameFromKeyboardInput(input);
             return this.world;
@@ -352,7 +360,10 @@ public class Game {
     }
 
     private boolean scanPlayerActionForQuitCommand(int counter, String input) {
-        return (input.charAt(counter) == ':' && counter + 1 < input.length() && input.charAt(counter + 1) == 'Q');
+        return (
+            input.charAt(counter) == ':'
+            && counter + 1 < input.length()
+            && input.charAt(counter + 1) == 'Q');
     }
 
     private void playGameFromKeyboardInput(String input) {
@@ -413,7 +424,8 @@ public class Game {
 
         // run through input actions
         while (previousStringCounter < previousGameState.length()) {
-            // check for quit command; because this is previous game state, we just break loop and 'present' game
+            // check for quit command; because this is previous game state,
+            // we just break loop and 'present' game
             if (this.scanPlayerActionForQuitCommand(previousStringCounter, previousGameState)) {
                 break;
             }
@@ -444,7 +456,9 @@ public class Game {
         }
 
         // if user had a save command, make sure to save the game
-        if (this.gameState.length() > 2 && this.gameState.substring(this.gameState.length() - 2).equals(":Q")) {
+        if (this.gameState.length() > 2
+            && this.gameState.substring(this.gameState.length() - 2).equals(":Q")
+        ) {
             this.saveGame(new GameState(this.gameState.toString()));
         }
     }

@@ -53,15 +53,15 @@ public class WorldGenerator {
     }
 
     private int generateRoomDimension() {
-        int MAXIMUM_ROOM_DIMENSION = 5;
-        int MINIMUM_ROOM_DIMENSION = 2;
-        return Math.max(MINIMUM_ROOM_DIMENSION, this.seedGen.nextInt(MAXIMUM_ROOM_DIMENSION));
+        int maximumRoomDimension = 5;
+        int minimumRoomDimension = 2;
+        return Math.max(minimumRoomDimension, this.seedGen.nextInt(maximumRoomDimension));
     }
 
     private int generateCorridorDimension() {
-        int MAXIMUM_CORRIDOR_DIMENSION = 8;
-        int MINIMUM_ROOM_DIMENSION = 4;
-        return Math.max(MINIMUM_ROOM_DIMENSION, this.seedGen.nextInt(MAXIMUM_CORRIDOR_DIMENSION));
+        int maximumCorridorDimension = 8;
+        int minimumRoomDimension = 4;
+        return Math.max(minimumRoomDimension, this.seedGen.nextInt(maximumCorridorDimension));
     }
 
     private int generateDoorCoordinate(int value) {
@@ -74,15 +74,19 @@ public class WorldGenerator {
         return col < 0 || col >= this.cols || row < 0 || row >= this.rows;
     }
 
-    private boolean roomsClearOfEachOther(Room existing, Coordinate candidateCoordinate, Room candidate) {
+    private boolean roomsClearOfEachOther(
+        Room existing,
+        Coordinate candidateCoordinate,
+        Room candidate
+    ) {
         int candidateX2 = candidateCoordinate.getCol() + candidate.getIndexWidth();
         int candidateY2 = candidateCoordinate.getRow() + candidate.getIndexHeight();
         int existingX2 = existing.getOriginCol() + existing.getIndexWidth();
         int existingY2 = existing.getOriginRow() + existing.getIndexHeight();
-        return (candidateCoordinate.getCol() > existingX2) ||
-            (candidateCoordinate.getRow() > existingY2) ||
-            (existing.getOriginCol() > candidateX2) ||
-            (existing.getOriginRow() > candidateY2);
+        return (candidateCoordinate.getCol() > existingX2)
+            || (candidateCoordinate.getRow() > existingY2)
+            || (existing.getOriginCol() > candidateX2)
+            || (existing.getOriginRow() > candidateY2);
     }
     /* end grid traversal and grid check helpers */
 
@@ -112,8 +116,8 @@ public class WorldGenerator {
                     this.seedGen.nextInt(this.rows)
             );
             if (
-                this.coordinateOutOfBounds(origin.getCol(), origin.getRow()) ||
-                this.coordinateOutOfBounds(
+                this.coordinateOutOfBounds(origin.getCol(), origin.getRow())
+                || this.coordinateOutOfBounds(
                     origin.getCol() + room.getIndexWidth(),
                     origin.getRow() + room.getIndexHeight()
                 )
@@ -152,17 +156,22 @@ public class WorldGenerator {
     // 0 = down, 1 = right, 2 = top, 3 = left
     private void addDoors(Room room) {
         Coordinate[] doorCoordinates = new Coordinate[4];
-        doorCoordinates[0] = new Coordinate(this.generateDoorCoordinate(room.getInnerWidth()), 0);
-        doorCoordinates[1] = new Coordinate(room.getIndexWidth(), this.generateDoorCoordinate(room.getInnerHeight()));
-        doorCoordinates[2] = new Coordinate(this.generateDoorCoordinate(room.getInnerWidth()), room.getIndexHeight());
-        doorCoordinates[3] = new Coordinate(0, this.generateDoorCoordinate(room.getInnerHeight()));
+        doorCoordinates[0] = new Coordinate(
+            this.generateDoorCoordinate(room.getInnerWidth()), 0);
+        doorCoordinates[1] = new Coordinate(
+            room.getIndexWidth(), this.generateDoorCoordinate(room.getInnerHeight()));
+        doorCoordinates[2] = new Coordinate(
+            this.generateDoorCoordinate(room.getInnerWidth()), room.getIndexHeight());
+        doorCoordinates[3] = new Coordinate(
+            0, this.generateDoorCoordinate(room.getInnerHeight()));
         room.setDoors(doorCoordinates);
     }
 
     private void addCorridorDoors(CorridorType corridorType, Room room) {
         Coordinate[] doorCoordinates = new Coordinate[4];
         if (corridorType == CorridorType.Horizontal) {
-            doorCoordinates[0] = new Coordinate(this.generateDoorCoordinate(room.getInnerWidth()), 0);
+            doorCoordinates[0] = new Coordinate(
+                this.generateDoorCoordinate(room.getInnerWidth()), 0);
             doorCoordinates[1] = new Coordinate(room.getIndexWidth(), 1);
             doorCoordinates[2] = new Coordinate(
                 this.generateDoorCoordinate(room.getInnerWidth()), room.getIndexHeight());
@@ -172,7 +181,8 @@ public class WorldGenerator {
             doorCoordinates[1] = new Coordinate(
                 room.getIndexWidth(), this.generateDoorCoordinate(room.getInnerHeight()));
             doorCoordinates[2] = new Coordinate(1, room.getIndexHeight());
-            doorCoordinates[3] = new Coordinate(0, this.generateDoorCoordinate(room.getInnerHeight()));
+            doorCoordinates[3] = new Coordinate(
+            0, this.generateDoorCoordinate(room.getInnerHeight()));
         }
         room.setDoors(doorCoordinates);
     }
@@ -215,8 +225,8 @@ public class WorldGenerator {
             default: {
                 Coordinate leftDoor = existing.getDoorCoordinate(key);
                 Coordinate shifted = new Coordinate(
-                existing.getOriginCol() + leftDoor.getCol() - 1,
-                existing.getOriginRow() + leftDoor.getRow()
+                    existing.getOriginCol() + leftDoor.getCol() - 1,
+                    existing.getOriginRow() + leftDoor.getRow()
                 );
                 if (this.coordinateOutOfBounds(shifted.getCol(), shifted.getRow())) {
                     return null;
@@ -239,7 +249,8 @@ public class WorldGenerator {
         // can the candidate room be attached to this room?
         boolean candidateOriginFound = false;
 
-        // make an array of four coordinates that are door coordinates relative to the WORLD rather than the local room
+        // make an array of four coordinates that are door coordinates relative
+        // to the WORLD rather than the local room
         Coordinate[] mapCoordinates = new Coordinate[4];
         for (int i = 0; i < 4; i += 1) {
             mapCoordinates[i] = this.shiftDoorCoordinate(existing, i);
@@ -251,7 +262,8 @@ public class WorldGenerator {
                 break;
             }
 
-            // if the existing room already has a door taken at this index, or the map coordinate was null, continue
+            // if the existing room already has a door taken at this index,
+            // or the map coordinate was null, continue
             if (existing.getDoorTaken(existingKey) || mapCoordinates[existingKey] == null) {
                 continue;
             }
@@ -259,20 +271,21 @@ public class WorldGenerator {
             // grab mapCoordinate for easier access
             Coordinate mapCoordinate = mapCoordinates[existingKey];
 
-            // for each of the doors on the candidate, see if the candidate room can be placed at the map coordinate
+            // for each of the doors on the candidate, see if the candidate room
+            // can be placed at the map coordinate
             for (int candidateKey = 0; candidateKey < 4; candidateKey += 1) {
                 // cdc = candidate door coordinate corresponding to the current iteration key
                 Coordinate cdc = candidate.getDoorCoordinate(candidateKey);
 
                 // making a potential origin from the map coordinate and the cdc
                 Coordinate potentialOrigin = new Coordinate(
-                mapCoordinate.getCol() - cdc.getCol(), mapCoordinate.getRow() - cdc.getRow()
+                    mapCoordinate.getCol() - cdc.getCol(), mapCoordinate.getRow() - cdc.getRow()
                 );
 
                 // check to see that this is a valid placement on the map
                 if (
-                    this.coordinateOutOfBounds(potentialOrigin.getCol(), potentialOrigin.getRow()) ||
-                    this.coordinateOutOfBounds(
+                    this.coordinateOutOfBounds(potentialOrigin.getCol(), potentialOrigin.getRow())
+                    || this.coordinateOutOfBounds(
                     potentialOrigin.getCol() + candidate.getIndexWidth(),
                         potentialOrigin.getRow() + candidate.getIndexHeight()
                     )
@@ -285,7 +298,8 @@ public class WorldGenerator {
                     continue;
                 }
 
-                // if you get here, this is a valid room; set the keys for doors; set candidate origin
+                // if you get here, this is a valid room; set the keys for doors;
+                // set candidate origin
                 candidate.setOrigin(potentialOrigin);
                 existing.setDoorTaken(existingKey);
                 candidate.setDoorTaken(candidateKey);
@@ -344,10 +358,13 @@ public class WorldGenerator {
 
             // check candidate against all rooms to see if it can be placed in room
             for (Room existing : this.rooms) {
-                // function will check if candidate can attach to any of the four doors of the existing room
-                boolean canPlaceCandidate = checkExistingRoomDoorConnectionsForCandidacy(existing, candidate);
+                // function will check if candidate can attach to any of the
+                // four doors of the existing room
+                boolean canPlaceCandidate = checkExistingRoomDoorConnectionsForCandidacy(
+                    existing, candidate);
 
-                // loop will terminate and register room if there was a successful attachment location
+                // loop will terminate and register room if there was a
+                // successful attachment location
                 if (canPlaceCandidate) {
                     this.registerRoom(candidate);
                     break;
