@@ -37,8 +37,8 @@ public class Percolation {
 
     /**
      * Open the site (row, col) if it is not open
-     * @param row
-     * @param col
+     * @param row - the row coordinate for a 2d grid
+     * @param col - the col coordinate for a 2d grid
      */
     public void open(int row, int col) {
         // check for illegal function parameters
@@ -59,8 +59,8 @@ public class Percolation {
 
     /**
      * Is the site (row, col) open?
-     * @param row
-     * @param col
+     * @param row - the row coordinate for a 2d grid
+     * @param col - the col coordinate for a 2d grid
      * @return indexIsTrue
      */
     public boolean isOpen(int row, int col) {
@@ -71,8 +71,8 @@ public class Percolation {
 
     /**
      * Is the site (row, col) full?
-     * @param row
-     * @param col
+     * @param row - the row coordinate for a 2d grid
+     * @param col - the col coordinate for a 2d grid
      * @return indexIsConnected
      */
     public boolean isFull(int row, int col) {
@@ -115,9 +115,17 @@ public class Percolation {
         }
     }
 
-    private void checkForAdjacentConnection(int originRow, int originCol, int targetRow, int targetCol) {
+    private void checkForAdjacentConnection(
+            int originRow,
+            int originCol,
+            int targetRow,
+            int targetCol
+    ) {
         if (this.isFull(targetRow, targetCol)) {
-            this.model.union(this.mapRowAndCol(originRow, originCol), this.mapRowAndCol(targetRow, targetCol));
+            this.model.union(
+                this.mapRowAndCol(originRow, originCol),
+                    this.mapRowAndCol(targetRow, targetCol)
+            );
         }
     }
 }

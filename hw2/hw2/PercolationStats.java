@@ -4,8 +4,8 @@ import edu.princeton.cs.introcs.StdRandom;
 import edu.princeton.cs.introcs.StdStats;
 
 public class PercolationStats {
-    private double[] stats;
-    private double trials;
+    private final double[] stats;
+    private final double trials;
 
     public PercolationStats(int N, int T, PercolationFactory pf) {
         // initialize stats array to collect data
@@ -17,19 +17,20 @@ public class PercolationStats {
             Percolation p = pf.make(N);
 
             // while system does not percolate, randomly open a row and column
-            while (true) {
-                p.open(StdRandom.uniform(N), StdRandom.uniform(N));
-                if (p.percolates()) {
-                    break;
+            do {
+                int row = StdRandom.uniform(N);
+                int col = StdRandom.uniform(N);
+                if (!p.isOpen(row, col)) {
+                    p.open(row, col);
                 }
-            }
+            } while (!p.percolates());
             stats[i] = (double) p.numberOfOpenSites() / (N * N);
         }
     }
 
     /**
      * Returns a sample mean of the percolation threshold for T trials
-     * @return
+     * @return - sample mean for T trials
      */
     public double mean() {
         return StdStats.mean(this.stats);
@@ -37,7 +38,7 @@ public class PercolationStats {
 
     /**
      * Returns the sample standard deviation of percolation threshold for T trials
-     * @return
+     * @return - sample standard deviation for T trials
      */
     public double stddev() {
         return StdStats.stddev(this.stats);
@@ -45,7 +46,7 @@ public class PercolationStats {
 
     /**
      * Returns the low endpoint of 95% confidence interval for T trials
-     * @return
+     * @return - lower 95% confidence interval value for T trials
      */
     public double confidenceLow() {
         return this.mean() - ((1.96 * this.stddev()) / (Math.sqrt(this.trials)));
@@ -53,7 +54,7 @@ public class PercolationStats {
 
     /**
      * Returns the high endpoint of 95% confidence interval for T trials
-     * @return
+     * @return - higher 95% confidence interval for T trials
      */
     public double confidenceHigh() {
         return this.mean() + ((1.96 * this.stddev()) / (Math.sqrt(this.trials)));
