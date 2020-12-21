@@ -78,7 +78,7 @@ public class Percolation {
     public boolean isFull(int row, int col) {
         this.checkIfInputOutOfBounds(row, col);
 
-        return this.spaces[this.mapRowAndCol(row, col)];
+        return !this.spaces[this.mapRowAndCol(row, col)];
     }
 
     /**
