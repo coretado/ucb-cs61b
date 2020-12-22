@@ -25,13 +25,13 @@ public class Percolation {
         this.spaces = new boolean[squaredInput + 2];
 
         // create source and sink
-        this.spaces[0] = true;
+        this.spaces[squaredInput] = true;
         this.spaces[squaredInput + 1] = true;
 
         // connect top row and bottom row to sink
         for (int i = 0; i < N; i += 1) {
-            this.model.union(0, i);
-            this.model.union(squaredInput - 1, this.mapRowAndCol(N - 1, i));
+            this.model.union(i, squaredInput);
+            this.model.union(this.mapRowAndCol(N - 1, i), squaredInput + 1);
         }
     }
 
@@ -44,7 +44,7 @@ public class Percolation {
         // check for illegal function parameters
         this.checkIfInputOutOfBounds(row, col);
 
-        // set space to true - "full"
+        // set space to true - "open"
         this.spaces[this.mapRowAndCol(row, col)] = true;
 
         // check surrounding sites if their open; connecting them if so
@@ -55,6 +55,8 @@ public class Percolation {
         
         // increment number of sites opened up
         this.openSites += 1;
+
+        // check if space is full
     }
 
     /**
@@ -77,8 +79,10 @@ public class Percolation {
      */
     public boolean isFull(int row, int col) {
         this.checkIfInputOutOfBounds(row, col);
+        int squared = this.dimension * this.dimension;
+        int coor = this.mapRowAndCol(row, col);
 
-        return !this.spaces[this.mapRowAndCol(row, col)];
+        return this.model.connected(squared, coor);
     }
 
     /**
@@ -94,7 +98,8 @@ public class Percolation {
      * @return systemPercolates
      */
     public boolean percolates() {
-        return this.model.connected(0, (this.dimension * this.dimension) + 1);
+        int squared = this.dimension * this.dimension;
+        return this.model.connected(squared, squared + 1);
     }
 
     private int mapRowAndCol(int row, int col) {
@@ -121,7 +126,16 @@ public class Percolation {
             int targetRow,
             int targetCol
     ) {
-        if (this.isFull(targetRow, targetCol)) {
+        if (
+            targetRow < 0
+            || targetRow >= this.dimension
+            || targetCol < 0
+            || targetCol >= this.dimension
+        ) {
+            return;
+        }
+
+        if (this.isOpen(targetRow, targetCol)) {
             this.model.union(
                 this.mapRowAndCol(originRow, originCol),
                     this.mapRowAndCol(targetRow, targetCol)
