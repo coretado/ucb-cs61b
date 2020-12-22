@@ -6,6 +6,7 @@ public class Percolation {
     private final WeightedQuickUnionUF model;
     private final boolean[] spaces;
     private final int dimension;
+    private final int squared;
     private int openSites = 0;
 
     public Percolation(int N) {
@@ -13,25 +14,25 @@ public class Percolation {
         this.checkIfInputOutOfBounds(N);
 
         // making a square number for grid
-        int squaredInput = N * N;
+        this.squared = N * N;
 
         // helper variable for mapping
         this.dimension = N;
 
         // create the WQUUF object
-        this.model = new WeightedQuickUnionUF(squaredInput + 2);
+        this.model = new WeightedQuickUnionUF(squared + 2);
 
         // create internal representation
-        this.spaces = new boolean[squaredInput + 2];
+        this.spaces = new boolean[squared + 2];
 
         // create source and sink
-        this.spaces[squaredInput] = true;
-        this.spaces[squaredInput + 1] = true;
+        this.spaces[squared] = true;
+        this.spaces[squared + 1] = true;
 
         // connect top row and bottom row to sink
         for (int i = 0; i < N; i += 1) {
-            this.model.union(i, squaredInput);
-            this.model.union(this.mapRowAndCol(N - 1, i), squaredInput + 1);
+            this.model.union(i, squared);
+            this.model.union(this.mapRowAndCol(N - 1, i), squared + 1);
         }
     }
 
@@ -82,7 +83,7 @@ public class Percolation {
         int squared = this.dimension * this.dimension;
         int coor = this.mapRowAndCol(row, col);
 
-        return this.model.connected(squared, coor);
+        return this.spaces[this.mapRowAndCol(row, col)] && this.model.connected(squared, coor);
     }
 
     /**
@@ -98,8 +99,7 @@ public class Percolation {
      * @return systemPercolates
      */
     public boolean percolates() {
-        int squared = this.dimension * this.dimension;
-        return this.model.connected(squared, squared + 1);
+        return this.model.connected(this.squared, this.squared + 1);
     }
 
     private int mapRowAndCol(int row, int col) {
