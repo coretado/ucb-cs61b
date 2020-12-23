@@ -4,6 +4,7 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
     private final WeightedQuickUnionUF model;
+    private final WeightedQuickUnionUF backtrack;
     private final boolean[] spaces;
     private final int dimension;
     private final int squared;
@@ -19,8 +20,9 @@ public class Percolation {
         // helper variable for mapping
         this.dimension = N;
 
-        // create the WQUUF object
+        // create the WQUUF objects
         this.model = new WeightedQuickUnionUF(squared + 2);
+        this.backtrack = new WeightedQuickUnionUF(squared + 1);
 
         // create internal representation
         this.spaces = new boolean[squared + 2];
@@ -32,6 +34,7 @@ public class Percolation {
         // connect top row and bottom row to sink
         for (int i = 0; i < N; i += 1) {
             this.model.union(i, squared);
+            this.backtrack.union(i, squared);
             this.model.union(this.mapRowAndCol(N - 1, i), squared + 1);
         }
     }
@@ -56,8 +59,6 @@ public class Percolation {
         
         // increment number of sites opened up
         this.openSites += 1;
-
-        // check if space is full
     }
 
     /**
@@ -80,10 +81,11 @@ public class Percolation {
      */
     public boolean isFull(int row, int col) {
         this.checkIfInputOutOfBounds(row, col);
-        int squared = this.dimension * this.dimension;
         int coor = this.mapRowAndCol(row, col);
 
-        return this.spaces[this.mapRowAndCol(row, col)] && this.model.connected(squared, coor);
+        return this.spaces[this.mapRowAndCol(row, col)]
+            && this.backtrack.connected(this.squared, coor)
+            && this.model.connected(this.squared, coor);
     }
 
     /**
@@ -128,18 +130,18 @@ public class Percolation {
     ) {
         if (
             targetRow < 0
-            || targetRow >= this.dimension
-            || targetCol < 0
-            || targetCol >= this.dimension
+                || targetRow >= this.dimension
+                || targetCol < 0
+                || targetCol >= this.dimension
         ) {
             return;
         }
 
         if (this.isOpen(targetRow, targetCol)) {
-            this.model.union(
-                this.mapRowAndCol(originRow, originCol),
-                    this.mapRowAndCol(targetRow, targetCol)
-            );
+            int coorOne = this.mapRowAndCol(originRow, originCol);
+            int coorTwo = this.mapRowAndCol(targetRow, targetCol);
+            this.model.union(coorOne, coorTwo);
+            this.backtrack.union(coorOne, coorTwo);
         }
     }
 }
