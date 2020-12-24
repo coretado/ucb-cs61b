@@ -6,8 +6,17 @@ import edu.princeton.cs.introcs.StdStats;
 public class PercolationStats {
     private final double[] stats;
     private final double trials;
+    private final double calculcatedMean;
+    private final double calculatedStdDev;
+    private final double calculatedConfidenceLow;
+    private final double calculatedConfidenceHigh;
 
     public PercolationStats(int N, int T, PercolationFactory pf) {
+        // check for out of bounds
+        if (N <= 0 || T <= 0) {
+            throw new IndexOutOfBoundsException("Invalid inputs N or T");
+        }
+
         // initialize stats array to collect data
         this.stats = new double[N];
         this.trials = T;
@@ -17,15 +26,22 @@ public class PercolationStats {
             Percolation p = pf.make(N);
 
             // while system does not percolate, randomly open a row and column
-            do {
+            while (!p.percolates()) {
                 int row = StdRandom.uniform(N);
                 int col = StdRandom.uniform(N);
-                if (!p.isOpen(row, col)) {
-                    p.open(row, col);
-                }
-            } while (!p.percolates());
+                p.open(row, col);
+            }
+
             stats[i] = (double) p.numberOfOpenSites() / (N * N);
         }
+
+        this.calculcatedMean = StdStats.mean(this.stats);
+        this.calculatedStdDev = StdStats.stddev(this.stats);
+
+        double stdDevPart = 1.96 * this.calculatedStdDev;
+        double sqrT = Math.sqrt(this.trials);
+        this.calculatedConfidenceLow = this.calculcatedMean - (stdDevPart / sqrT);
+        this.calculatedConfidenceHigh = this.calculcatedMean + (stdDevPart / sqrT);
     }
 
     /**
@@ -33,7 +49,7 @@ public class PercolationStats {
      * @return - sample mean for T trials
      */
     public double mean() {
-        return StdStats.mean(this.stats);
+        return this.calculcatedMean;
     }
 
     /**
@@ -41,7 +57,7 @@ public class PercolationStats {
      * @return - sample standard deviation for T trials
      */
     public double stddev() {
-        return StdStats.stddev(this.stats);
+        return this.calculatedStdDev;
     }
 
     /**
@@ -49,7 +65,7 @@ public class PercolationStats {
      * @return - lower 95% confidence interval value for T trials
      */
     public double confidenceLow() {
-        return this.mean() - ((1.96 * this.stddev()) / (Math.sqrt(this.trials)));
+        return this.calculatedConfidenceLow;
     }
 
     /**
@@ -57,6 +73,6 @@ public class PercolationStats {
      * @return - higher 95% confidence interval for T trials
      */
     public double confidenceHigh() {
-        return this.mean() + ((1.96 * this.stddev()) / (Math.sqrt(this.trials)));
+        return this.calculatedConfidenceHigh;
     }
 }

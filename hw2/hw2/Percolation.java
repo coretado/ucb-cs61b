@@ -48,17 +48,16 @@ public class Percolation {
         // check for illegal function parameters
         this.checkIfInputOutOfBounds(row, col);
 
-        // set space to true - "open"
-        this.spaces[this.mapRowAndCol(row, col)] = true;
+        // if we have not yet opened this site, mark it as open and increment open sites
+        if (!this.isOpen(row, col)) {
+            this.spaces[this.mapRowAndCol(row, col)] = true;
+            this.openSites += 1;
 
-        // check surrounding sites if their open; connecting them if so
-        this.checkForAdjacentConnection(row, col, row - 1, col);
-        this.checkForAdjacentConnection(row, col, row, col + 1);
-        this.checkForAdjacentConnection(row, col, row + 1, col);
-        this.checkForAdjacentConnection(row, col, row, col - 1);
-        
-        // increment number of sites opened up
-        this.openSites += 1;
+            this.checkForAdjacentConnection(row, col, row - 1, col);
+            this.checkForAdjacentConnection(row, col, row, col + 1);
+            this.checkForAdjacentConnection(row, col, row + 1, col);
+            this.checkForAdjacentConnection(row, col, row, col - 1);
+        }
     }
 
     /**
@@ -143,5 +142,8 @@ public class Percolation {
             this.model.union(coorOne, coorTwo);
             this.backtrack.union(coorOne, coorTwo);
         }
+    }
+
+    public static void main(String[] args) {
     }
 }
