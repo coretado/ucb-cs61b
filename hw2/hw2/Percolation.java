@@ -109,7 +109,7 @@ public class Percolation {
     
     private void checkIfInputOutOfBounds(int N) {
         if (N <= 0) {
-            throw new IndexOutOfBoundsException("Can not have size N be less than or equal to 0");
+            throw new IllegalArgumentException("Can not have size N be less than or equal to 0");
         }
     }
 

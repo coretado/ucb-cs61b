@@ -4,8 +4,6 @@ import edu.princeton.cs.introcs.StdRandom;
 import edu.princeton.cs.introcs.StdStats;
 
 public class PercolationStats {
-    private final double[] stats;
-    private final double trials;
     private final double calculcatedMean;
     private final double calculatedStdDev;
     private final double calculatedConfidenceLow;
@@ -14,12 +12,11 @@ public class PercolationStats {
     public PercolationStats(int N, int T, PercolationFactory pf) {
         // check for out of bounds
         if (N <= 0 || T <= 0) {
-            throw new IndexOutOfBoundsException("Invalid inputs N or T");
+            throw new IllegalArgumentException("Invalid inputs N or T");
         }
 
         // initialize stats array to collect data
-        this.stats = new double[N];
-        this.trials = T;
+        double[] stats = new double[N];
 
         // Attempt percolation for T number of Percolation objects;
         for (int i = 0; i < T; i += 1) {
@@ -35,11 +32,11 @@ public class PercolationStats {
             stats[i] = (double) p.numberOfOpenSites() / (N * N);
         }
 
-        this.calculcatedMean = StdStats.mean(this.stats);
-        this.calculatedStdDev = StdStats.stddev(this.stats);
+        this.calculcatedMean = StdStats.mean(stats);
+        this.calculatedStdDev = StdStats.stddev(stats);
 
         double stdDevPart = 1.96 * this.calculatedStdDev;
-        double sqrT = Math.sqrt(this.trials);
+        double sqrT = Math.sqrt(T);
         this.calculatedConfidenceLow = this.calculcatedMean - (stdDevPart / sqrT);
         this.calculatedConfidenceHigh = this.calculcatedMean + (stdDevPart / sqrT);
     }
