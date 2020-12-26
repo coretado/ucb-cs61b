@@ -16,7 +16,7 @@ public class PercolationStats {
         }
 
         // initialize stats array to collect data
-        double[] stats = new double[N];
+        double[] stats = new double[T];
 
         // Attempt percolation for T number of Percolation objects;
         for (int i = 0; i < T; i += 1) {
