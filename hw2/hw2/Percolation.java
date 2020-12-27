@@ -31,11 +31,6 @@ public class Percolation {
         this.spaces[squared] = true;
         this.spaces[squared + 1] = true;
 
-        // edge case of N = 1
-        if (N == 1) {
-            this.spaces[0] = true;
-        }
-
         // connect top row and bottom row to sink
         for (int i = 0; i < N; i += 1) {
             this.model.union(i, squared);
@@ -105,7 +100,7 @@ public class Percolation {
      * @return systemPercolates
      */
     public boolean percolates() {
-        return this.model.connected(this.squared, this.squared + 1);
+        return this.openSites > 0 && this.model.connected(this.squared, this.squared + 1);
     }
 
     private int mapRowAndCol(int row, int col) {
