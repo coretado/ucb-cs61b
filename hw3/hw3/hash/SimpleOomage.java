@@ -32,9 +32,9 @@ public class SimpleOomage implements Oomage {
         } else {
             int result = this.hashCode;
             if (result == 0) {
-                result = Integer.hashCode(this.red);
-                result = 31 * result + Integer.hashCode(this.green);
-                result = 31 * result + Integer.hashCode(this.blue);
+                result = Integer.hashCode(this.red / 5);
+                result = 31 * result + Integer.hashCode(this.green / 5);
+                result = 31 * result + Integer.hashCode(this.blue / 5);
                 this.hashCode = result;
             }
             return result;
