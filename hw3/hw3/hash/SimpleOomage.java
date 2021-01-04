@@ -1,5 +1,6 @@
 package hw3.hash;
 import java.awt.Color;
+
 import edu.princeton.cs.algs4.StdRandom;
 import edu.princeton.cs.algs4.StdDraw;
 
@@ -32,9 +33,10 @@ public class SimpleOomage implements Oomage {
         } else {
             int result = this.hashCode;
             if (result == 0) {
-                result = Integer.hashCode(this.red / 3);
-                result = 31 * result + Integer.hashCode(this.green / 3);
-                result = 31 * result + Integer.hashCode(this.blue / 3);
+                result = 1;
+                result = 31 * result + Integer.hashCode(this.red / 5);
+                result = 17 * result + Integer.hashCode(this.green / 5);
+                result = 19 * result + Integer.hashCode(this.blue / 5);
                 this.hashCode = result;
             }
             return result;
