@@ -4,9 +4,6 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-
-
-import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
@@ -32,6 +29,9 @@ public class TestSimpleOomage {
         assertNotEquals(ooA, ooB);
         assertEquals(ooA, ooC);
         assertEquals(ooA.hashCode(), ooC.hashCode());
+        SimpleOomage ooD = new SimpleOomage(0, 5, 0);
+        SimpleOomage ooE = new SimpleOomage(0, 0, 155);
+        assertNotEquals(ooD.hashCode(), ooE.hashCode());
     }
 
     @Test
