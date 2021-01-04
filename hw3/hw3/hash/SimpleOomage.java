@@ -33,10 +33,7 @@ public class SimpleOomage implements Oomage {
         } else {
             int result = this.hashCode;
             if (result == 0) {
-                result = 1;
-                result = 31 * result + Integer.hashCode(this.red / 5);
-                result = 17 * result + Integer.hashCode(this.green / 5);
-                result = 19 * result + Integer.hashCode(this.blue / 5);
+                result = (this.red / 5) * 31 + (this.green / 5) * 37 + (this.blue / 5) * 41;
                 this.hashCode = result;
             }
             return result;
