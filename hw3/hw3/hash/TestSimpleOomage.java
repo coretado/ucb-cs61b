@@ -37,6 +37,9 @@ public class TestSimpleOomage {
         SimpleOomage ooG = new SimpleOomage(0, 0, 185);
         SimpleOomage ooH = new SimpleOomage(0, 205, 0);
         assertNotEquals(ooG.hashCode(), ooH.hashCode());
+        SimpleOomage ooI = new SimpleOomage(0, 175, 0);
+        SimpleOomage ooJ = new SimpleOomage(10, 0, 85);
+        assertNotEquals(ooI.hashCode(), ooJ.hashCode());
     }
 
     @Test
