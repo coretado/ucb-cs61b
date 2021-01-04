@@ -34,8 +34,8 @@ public class SimpleOomage implements Oomage {
             int result = this.hashCode;
             if (result == 0) {
                 result = ((this.red / 5) + 1) * 31;
-                result = result + ((this.green / 5) + 1) * 37;
-                result = result + ((this.blue / 5) + 1) * 41;
+                result = result + ((this.green / 5) + 1) * 113;
+                result = result + ((this.blue / 5) + 1) * 229;
                 this.hashCode = result;
             }
             return result;
