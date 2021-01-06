@@ -104,8 +104,10 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         // Throws an exception if index is invalid. DON'T CHANGE THIS LINE.
         validateSinkSwimArg(index);
 
-        /** TODO: Your code here. */
-        return;
+        if (contents[parentIndex(index)].myPriority > contents[index].myPriority) {
+            swap(parentIndex(index), index);
+            swim(parentIndex(index));
+        }
     }
 
     /**
