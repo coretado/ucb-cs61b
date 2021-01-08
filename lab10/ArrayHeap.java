@@ -119,7 +119,7 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
 
         int smaller = min(leftIndex(index), rightIndex(index));
 
-        if (smaller >= size) {
+        if (smaller > size) {
             return;
         }
 
@@ -137,13 +137,13 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
     @Override
     public void insert(T item, double priority) {
         /* If the array is totally full, resize. */
-        if (size + 1 == contents.length) {
-            resize(contents.length * 2);
+        if (this.size + 1 == this.contents.length) {
+            resize(this.contents.length * 2);
         }
 
         this.contents[size + 1] = new Node(item, priority);
-        size += 1;
-        swim(size);
+        this.size += 1;
+        swim(this.size);
     }
 
     /**
@@ -152,8 +152,10 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
      */
     @Override
     public T peek() {
-        /* TODO: Your code here! */
-        return null;
+        if (this.size == 0) {
+            return null;
+        }
+        return this.contents[1].myItem;
     }
 
     /**
@@ -167,8 +169,15 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
      */
     @Override
     public T removeMin() {
-        /* TODO: Your code here! */
-        return null;
+        if (this.size == 0) {
+            return null;
+        }
+        T item = this.contents[1].myItem;
+        swap(1, this.size);
+        this.contents[size] = null;
+        size -= 1;
+        sink(1);
+        return item;
     }
 
     /**
@@ -190,8 +199,22 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
      */
     @Override
     public void changePriority(T item, double priority) {
-        /* TODO: Your code here! */
-        return;
+        int found = 1;
+        double oldPriority = -1;
+        for ( ; found <= this.size; found += 1) {
+            if (this.contents[found].myItem.equals(item)) {
+                oldPriority = this.contents[found].myPriority;
+            }
+        }
+        if (oldPriority == -1) {
+            return;
+        }
+        this.contents[found].myPriority = priority;
+        if (oldPriority < priority) {
+            swim(found);
+        } else {
+            sink(found);
+        }
     }
 
     /**
