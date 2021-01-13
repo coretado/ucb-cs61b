@@ -29,13 +29,21 @@ public class Board implements WorldState {
         Queue<WorldState> worldStateNeighbors = new Queue<>();
         // shift up possible? make board
         int up = this.isOutOfBounds(
-        this.blankRow - 1, this.blankCol) ? -1 : this.transformCoor(this.blankRow - 1, this.blankCol);
+            this.blankRow - 1, this.blankCol)
+                ? -1
+                : this.transformCoor(this.blankRow - 1, this.blankCol);
         int right = this.isOutOfBounds(
-            this.blankRow, this.blankCol + 1) ? -1 : this.transformCoor(this.blankRow, this.blankCol + 1);
+                    this.blankRow, this.blankCol + 1)
+                    ? -1
+                    : this.transformCoor(this.blankRow, this.blankCol + 1);
         int down = this.isOutOfBounds(
-        this.blankRow + 1, this.blankCol) ? -1 : this.transformCoor(this.blankRow + 1, this.blankCol);
+                this.blankRow + 1, this.blankCol)
+                    ? -1
+                    : this.transformCoor(this.blankRow + 1, this.blankCol);
         int left = this.isOutOfBounds(
-            this.blankRow, this.blankCol - 1) ? -1 : this.transformCoor(this.blankRow, this.blankCol - 1);
+                    this.blankRow, this.blankCol - 1)
+                    ? -1
+                    : this.transformCoor(this.blankRow, this.blankCol - 1);
         if (up != -1) {
             worldStateNeighbors.enqueue(new Board(this.createNeighbor(up)));
         }
@@ -122,6 +130,7 @@ public class Board implements WorldState {
     }
 
     public int estimatedDistanceToGoal() {
+        return this.manhattan(this.tiles);
     }
 
     public boolean equals(Object y) {
@@ -146,7 +155,7 @@ public class Board implements WorldState {
         s.append(N + "\n");
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                s.append(String.format("%2d ", tileAt(i,j)));
+                s.append(String.format("%2d ", tileAt(i, j)));
             }
             s.append("\n");
         }
@@ -157,7 +166,7 @@ public class Board implements WorldState {
     private void checkCoorOutOfBounds(int i, int j) {
         if (i < 0 || i >= this.size || j < 0 || j >= this.size) {
             throw new IndexOutOfBoundsException(
-                "Coordinate violates parameters; either i or j is less than 0 or greater than max size."
+                "Coordinate violates parameters; i or j is less than 0 or greater than max size."
             );
         }
     }
