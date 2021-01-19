@@ -1,31 +1,69 @@
 package hw4.puzzle;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.PriorityQueue;
+import edu.princeton.cs.algs4.MinPQ;
+
+import java.util.*;
 
 public class Solver {
     private int moves;
-    private PriorityQueue<WorldState> searchNodes;
-    private List<WorldState> solution;
+    private final Deque<WorldState> solution;
+    // private int enqueuecounter = 1;
 
     public Solver(WorldState initial) {
-        this.searchNodes = new PriorityQueue<>();
-        this.searchNodes.add(initial);
-        this.solution = new ArrayList<>();
+        // setup
+        MinPQ<SearchNode> searchNodes = new MinPQ<>();
+        this.solution = new ArrayDeque<>();
         this.moves = 0;
-        while (true) {
-            WorldState ws = this.searchNodes.remove();
-            this.moves += 1;
-            if (ws.estimatedDistanceToGoal() == 0) {
-                break;
+        searchNodes.insert(new SearchNode(initial, this.moves, null));
+        // System.out.println("enqueue: " + this.enqueuecounter);
+
+        // first node
+        SearchNode state = searchNodes.delMin();
+        if (state.worldState.estimatedDistanceToGoal() == 0) {
+            // System.out.println("enqueue: " + (++this.enqueuecounter));
+            this.solution.add(state.worldState);
+        } else {
+            for (WorldState statePrime : state.worldState.neighbors()) {
+                searchNodes.insert(new SearchNode(statePrime, 1, state));
             }
-            for (WorldState wsprime : ws.neighbors()) {
-                if (!wsprime.equals(ws)) {
-                    this.searchNodes.add(wsprime);
+            // continuing search if initial node isn't goal
+            while (true) {
+                state = searchNodes.delMin();
+                this.moves += 1;
+                if (state.worldState.estimatedDistanceToGoal() == 0) {
+                    this.solution.add(state.worldState);
+                    break;
                 }
+                for (WorldState statePrime : state.worldState.neighbors()) {
+                    if (!statePrime.equals(state.previousNode.worldState)) {
+                        // System.out.println("enqueue: " + (++this.enqueuecounter));
+                        searchNodes.insert(new SearchNode(statePrime, this.moves, state));
+                    }
+                }
+                this.solution.add(state.worldState);
             }
-            this.solution.add(ws);
+        }
+    }
+
+    private static class SearchNode implements Comparable<SearchNode> {
+        private final WorldState worldState;
+        private final int moves;
+        private final SearchNode previousNode;
+
+        public SearchNode(
+            WorldState worldState,
+            int moves,
+            SearchNode searchNode
+        ) {
+            this.worldState = worldState;
+            this.moves = moves;
+            this.previousNode = searchNode;
+        }
+
+        public int compareTo(SearchNode O) {
+            int tPrio = this.worldState.estimatedDistanceToGoal() + this.moves;
+            int oPrio = O.worldState.estimatedDistanceToGoal() + O.moves;
+            return Integer.compare(tPrio, oPrio);
         }
     }
 
