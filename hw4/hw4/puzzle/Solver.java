@@ -7,7 +7,6 @@ import java.util.*;
 public class Solver {
     private int moves;
     private final Deque<WorldState> solution;
-    // private int enqueuecounter = 1;
 
     public Solver(WorldState initial) {
         // setup
@@ -15,31 +14,31 @@ public class Solver {
         this.solution = new ArrayDeque<>();
         this.moves = 0;
         searchNodes.insert(new SearchNode(initial, this.moves, null));
-        // System.out.println("enqueue: " + this.enqueuecounter);
+        System.out.println("enqueue amount: " + this.solution.size());
 
         // first node
         SearchNode state = searchNodes.delMin();
         if (state.worldState.estimatedDistanceToGoal() == 0) {
-            // System.out.println("enqueue: " + (++this.enqueuecounter));
             this.solution.add(state.worldState);
         } else {
             for (WorldState statePrime : state.worldState.neighbors()) {
                 searchNodes.insert(new SearchNode(statePrime, 1, state));
             }
+            System.out.println("enqueue amount: " + this.solution.size());
             // continuing search if initial node isn't goal
             while (true) {
                 state = searchNodes.delMin();
                 this.moves += 1;
-                if (state.worldState.estimatedDistanceToGoal() == 0) {
+                if (state.worldState.isGoal()) {
                     this.solution.add(state.worldState);
                     break;
                 }
                 for (WorldState statePrime : state.worldState.neighbors()) {
                     if (!statePrime.equals(state.previousNode.worldState)) {
-                        // System.out.println("enqueue: " + (++this.enqueuecounter));
                         searchNodes.insert(new SearchNode(statePrime, this.moves, state));
                     }
                 }
+                System.out.println("enqueue amount: " + this.solution.size());
                 this.solution.add(state.worldState);
             }
         }
@@ -63,7 +62,7 @@ public class Solver {
         public int compareTo(SearchNode O) {
             int tPrio = this.worldState.estimatedDistanceToGoal() + this.moves;
             int oPrio = O.worldState.estimatedDistanceToGoal() + O.moves;
-            return Integer.compare(tPrio, oPrio);
+            return tPrio - oPrio;
         }
     }
 

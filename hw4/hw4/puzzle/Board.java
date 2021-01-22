@@ -9,8 +9,13 @@ public class Board implements WorldState {
     private final int blankCol;
 
     public Board(int[][] tiles) {
-        this.tiles = tiles;
         this.size = tiles.length;
+        this.tiles = new int[this.size][this.size];
+        for (int row = 0; row < this.size; row += 1) {
+            for (int col = 0; col < this.size; col += 1) {
+                this.tiles[row][col] = tiles[row][col];
+            }
+        }
         int blank = this.findBlank(tiles);
         this.blankCol = transformCol(blank);
         this.blankRow = transformRow(blank);
@@ -27,7 +32,6 @@ public class Board implements WorldState {
 
     public Iterable<WorldState> neighbors() {
         Queue<WorldState> worldStateNeighbors = new Queue<>();
-        // shift up possible? make board
         int up = this.isOutOfBounds(
             this.blankRow - 1, this.blankCol)
                 ? -1
@@ -77,11 +81,14 @@ public class Board implements WorldState {
         int total = 0;
         for (int row = 0; row < this.size; row += 1) {
             for (int col = 0; col < this.size; col += 1) {
-                int coordinate = potential[row][col];
+                int coordinate = potential[row][col] - 1;
+                if (coordinate == -1) {
+                    continue;
+                }
                 int targetCol = this.transformCol(coordinate);
                 int targetRow = this.transformRow(coordinate);
-                total = total + Math.abs(col - targetCol);
-                total = total + Math.abs(row - targetRow);
+                total += Math.abs(col - targetCol);
+                total += Math.abs(row - targetRow);
             }
         }
         return total;
@@ -101,11 +108,11 @@ public class Board implements WorldState {
     }
 
     private int transformRow(int row) {
-        return row % this.size;
+        return row / this.size;
     }
 
     private int transformCol(int col) {
-        return col / this.size;
+        return col % this.size;
     }
 
     private int transformCoor(int row, int col) {
