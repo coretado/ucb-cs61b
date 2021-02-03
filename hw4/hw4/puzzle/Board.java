@@ -2,11 +2,16 @@ package hw4.puzzle;
 
 import edu.princeton.cs.algs4.Queue;
 
+import java.util.Arrays;
+
 public class Board implements WorldState {
     private final int[][] tiles;
     private final int size;
     private final int blankRow;
     private final int blankCol;
+    private final int manhattan;
+    private final int hamming;
+    private int hashCode;
 
     public Board(int[][] tiles) {
         this.size = tiles.length;
@@ -16,9 +21,11 @@ public class Board implements WorldState {
                 this.tiles[row][col] = tiles[row][col];
             }
         }
-        int blank = this.findBlank(tiles);
+        int blank = this.findBlank();
         this.blankCol = transformCol(blank);
         this.blankRow = transformRow(blank);
+        this.manhattan = this.findManhattan();
+        this.hamming = this.findHamming();
     }
 
     public int tileAt(int i, int j) {
@@ -63,12 +70,16 @@ public class Board implements WorldState {
         return worldStateNeighbors;
     }
 
-    public int hamming(int[][] potential) {
+    public int hamming() {
+        return this.hamming;
+    }
+
+    public int findHamming() {
         int total = 0;
         for (int row = 0; row < this.size; row += 1) {
             for (int col = 0; col < this.size; col += 1) {
                 int expected = transformCoor(row, col);
-                int actual = potential[row][col];
+                int actual = this.tiles[row][col];
                 if (expected != actual) {
                     total += 1;
                 }
@@ -77,11 +88,15 @@ public class Board implements WorldState {
         return total;
     }
 
-    public int manhattan(int[][] potential) {
+    public int manhattan() {
+        return this.manhattan;
+    }
+
+    public int findManhattan() {
         int total = 0;
         for (int row = 0; row < this.size; row += 1) {
             for (int col = 0; col < this.size; col += 1) {
-                int coordinate = potential[row][col] - 1;
+                int coordinate = this.tiles[row][col] - 1;
                 if (coordinate == -1) {
                     continue;
                 }
@@ -94,11 +109,11 @@ public class Board implements WorldState {
         return total;
     }
 
-    private int findBlank(int[][] incoming) {
+    private int findBlank() {
         int blank = 0;
         for (int row = 0; row < this.size; row += 1) {
             for (int col = 0; col < this.size; col += 1) {
-                if (incoming[row][col] == 0) {
+                if (this.tiles[row][col] == 0) {
                     blank = this.transformCoor(row, col);
                     break;
                 }
@@ -137,9 +152,10 @@ public class Board implements WorldState {
     }
 
     public int estimatedDistanceToGoal() {
-        return this.manhattan(this.tiles);
+        return this.manhattan();
     }
 
+    @Override
     public boolean equals(Object y) {
         if (y == this) {
             return true;
@@ -152,6 +168,21 @@ public class Board implements WorldState {
             && this.tilesMatch(this.tiles, that.tiles)
             && this.blankRow == that.blankRow
             && this.blankCol == that.blankCol;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = this.hashCode;
+        if (result == 0) {
+            result = Arrays.deepHashCode(this.tiles);
+            result = 31 * result + Integer.hashCode(this.size);
+            result = 31 * result + Integer.hashCode(this.blankRow);
+            result = 31 * result + Integer.hashCode(this.blankCol);
+            result = 31 * result + Integer.hashCode(this.manhattan);
+            result = 31 * result + Integer.hashCode(this.hamming);
+            this.hashCode = result;
+        }
+        return result;
     }
 
     /** Returns the string representation of the board. 
