@@ -74,12 +74,15 @@ public class Board implements WorldState {
         return this.hamming;
     }
 
-    public int findHamming() {
+    private int findHamming() {
         int total = 0;
         for (int row = 0; row < this.size; row += 1) {
             for (int col = 0; col < this.size; col += 1) {
-                int expected = transformCoor(row, col);
+                int expected = transformCoor(row, col) + 1;
                 int actual = this.tiles[row][col];
+                if (actual == 0) {
+                    continue;
+                }
                 if (expected != actual) {
                     total += 1;
                 }
@@ -92,7 +95,7 @@ public class Board implements WorldState {
         return this.manhattan;
     }
 
-    public int findManhattan() {
+    private int findManhattan() {
         int total = 0;
         for (int row = 0; row < this.size; row += 1) {
             for (int col = 0; col < this.size; col += 1) {
@@ -167,7 +170,9 @@ public class Board implements WorldState {
         return this.size == that.size
             && this.tilesMatch(this.tiles, that.tiles)
             && this.blankRow == that.blankRow
-            && this.blankCol == that.blankCol;
+            && this.blankCol == that.blankCol
+            && this.manhattan == that.manhattan
+            && this.hamming == that.hamming;
     }
 
     @Override
