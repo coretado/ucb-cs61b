@@ -1,14 +1,14 @@
 package hw4.puzzle;
 
 import edu.princeton.cs.algs4.MinPQ;
-import edu.princeton.cs.algs4.Queue;
+import edu.princeton.cs.algs4.Stack;
 
 public class Solver {
-    private final Queue<WorldState> solution;
+    private final Stack<WorldState> solution;
 
     public Solver(WorldState initial) {
         MinPQ<SearchNode> searchNodes = new MinPQ<>();
-        this.solution = new Queue<>();
+        this.solution = new Stack<>();
         searchNodes.insert(new SearchNode(initial, 0, null));
 
         SearchNode state;
@@ -34,7 +34,7 @@ public class Solver {
         }
 
         for ( ; state != null; state = state.previousNode) {
-            this.solution.enqueue(state.worldState);
+            this.solution.push(state.worldState);
         }
     }
 
