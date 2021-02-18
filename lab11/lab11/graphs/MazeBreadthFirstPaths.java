@@ -37,6 +37,9 @@ public class MazeBreadthFirstPaths extends MazeExplorer {
             for (int w : this.maze.adj(v)) {
                 if (!marked[w]) {
                     this.marked[w] = true;
+                    this.edgeTo[w] = v;
+                    this.distTo[w] = this.distTo[v] + 1;
+                    this.announce();
                     if (w == t) {
                         this.targetFound = true;
                     }
@@ -44,8 +47,6 @@ public class MazeBreadthFirstPaths extends MazeExplorer {
                         break;
                     }
                     fringe.add(w);
-                    this.edgeTo[w] = v;
-                    this.distTo[w] = this.distTo[v] + 1;
                 }
             }
             if (this.targetFound) {
