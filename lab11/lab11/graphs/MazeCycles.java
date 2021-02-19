@@ -1,5 +1,8 @@
 package lab11.graphs;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  *  @author Josh Hug
  */
@@ -52,11 +55,19 @@ public class MazeCycles extends MazeExplorer {
 
     private void markCycle(int parent, int offender) {
         int size = this.edgeTo.length;
-        // resetting edgeTo
-        for (int i = 0; i < size; i += 1) {
-            this.edgeTo[i] = Integer.MAX_VALUE;
-        }
         this.edgeTo[parent] = offender;
+        Set<Integer> loop = new HashSet<>();
+        int node = offender;
+        loop.add(parent);
+        while (node != parent) {
+            loop.add(node);
+            node = this.edgeTo[node];
+        }
+        for (int i = 0; i < size; i += 1) {
+            if (!loop.contains(i)) {
+                this.edgeTo[i] = Integer.MAX_VALUE;
+            }
+        }
         announce();
     }
 }
