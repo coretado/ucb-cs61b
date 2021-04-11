@@ -68,6 +68,9 @@ public class MergeSort {
     /** Returns a Queue that contains the given items sorted from least to greatest. */
     public static <Item extends Comparable> Queue<Item> mergeSort(
             Queue<Item> items) {
+        if (items == null || items.size() == 0) {
+            return new Queue<>();
+        }
         Queue<Queue<Item>> exploded = makeSingleItemQueues(items);
         while (exploded.size() != 1) {
             Queue<Queue<Item>> aux = new Queue<>();
