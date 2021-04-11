@@ -47,13 +47,57 @@ public class QuickSort {
     private static <Item extends Comparable> void partition(
             Queue<Item> unsorted, Item pivot,
             Queue<Item> less, Queue<Item> equal, Queue<Item> greater) {
-        // Your code here!
+        unsorted.forEach(check -> {
+            if (check.compareTo(pivot) < 0) {
+                less.enqueue(check);
+            } else if (check.compareTo(pivot) > 0) {
+                greater.enqueue(check);
+            } else {
+                equal.enqueue(check);
+            }
+        });
     }
 
     /** Returns a Queue that contains the given items sorted from least to greatest. */
     public static <Item extends Comparable> Queue<Item> quickSort(
             Queue<Item> items) {
-        // Your code here!
-        return items;
+        if (items == null || items.size() == 0) {
+            return new Queue<>();
+        }
+        if (items.size() == 1) {
+            return items;
+        }
+        Item picked = getRandomItem(items);
+        Queue<Item> less = new Queue<>();
+        Queue<Item> equal = new Queue<>();
+        Queue<Item> greater = new Queue<>();
+        partition(items, picked, less, equal, greater);
+        less = quickSort(less);
+        greater = quickSort(greater);
+        Queue<Item> leftCenter = catenate(less, equal);
+        return catenate(leftCenter, greater);
+    }
+
+    public static void main(String[] args) {
+        Queue<String> drivers = new Queue<>();
+        // add drivers
+        drivers.enqueue("Verstappen");
+        drivers.enqueue("Hamilton");
+        drivers.enqueue("Bottas");
+        drivers.enqueue("Alonso");
+        drivers.enqueue("Ricciardo");
+        drivers.enqueue("Gasly");
+        drivers.enqueue("Vettel");
+        drivers.enqueue("Tsunoda");
+        drivers.enqueue("Russell");
+        // print drivers
+        drivers.forEach(d -> System.out.println(d));
+        // spacer
+        System.out.println("---");
+        // sort drivers
+        drivers = QuickSort.quickSort(drivers);
+        // print sorted drivers
+        drivers.forEach(d -> System.out.println(d));
+
     }
 }
