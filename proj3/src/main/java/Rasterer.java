@@ -45,6 +45,7 @@ public class Rasterer {
      *                    forget to set this to true on success! <br>
      */
     public Map<String, Object> getMapRaster(Map<String, Double> params) {
+        System.out.println(params);
         Map<String, Object> results = new HashMap<>();
 
         // Catching corner cases
@@ -86,8 +87,8 @@ public class Rasterer {
 
     /**
      * Helper function used to catch edge cases of coordinate inputs. These bad inputs include:
-     * - if y1 is somehow less than y0
-     * - if x1 is somehow less than x0
+     * - if the lower latitude is somehow higher than the origin latitude
+     * - if the rightmost longitude is somehow less than the origin longitude
      * - if the coordinates provided do not generate a rectangular query box that intersects with the ROOT coordinates
      *
      * @param params Map object from server request containing BearMaps Request parameters
@@ -99,10 +100,10 @@ public class Rasterer {
         Double PARAM_ULLAT = params.get("ullat");
         Double PARAM_LRLAT = params.get("lrlat");
 
-        if (PARAM_LRLAT < PARAM_ULLAT) {
+        if (PARAM_LRLAT > PARAM_ULLAT) {
             return true;
         }
-        if (PARAM_LRLON < PARAM_ULLON) {
+        if (PARAM_ULLON > PARAM_LRLON) {
             return true;
         }
         return this.hasIntersectionWithRoot(PARAM_ULLON, PARAM_LRLON, PARAM_ULLAT, PARAM_LRLAT);
@@ -168,14 +169,18 @@ public class Rasterer {
     private int calculateDepth(Map<String, Double> params) {
         double paramLRLON = params.get("lrlon");
         double paramULLON = params.get("ullon");
-        double width = params.get("width");
+        double width = params.get("w");
         double paramDPP = (paramLRLON - paramULLON) / width;
         int depth = 0;
-        while (depth < 10) {
+        while (true) {
             double divider = Math.pow(2.0, depth);
-            double deltaX = depth == 0 ? 0.0 : this.ROOT_DELTA_X / divider;
-            double longDPP = ((MapServer.ROOT_ULLON + deltaX) + MapServer.ROOT_ULLON) / MapServer.TILE_SIZE;
+//            double deltaX = depth == 0 ? this.ROOT_DELTA_X : this.ROOT_DELTA_X / divider;
+            double deltaX = this.ROOT_DELTA_X / divider;
+            double longDPP = ((MapServer.ROOT_ULLON + deltaX) - MapServer.ROOT_ULLON) / MapServer.TILE_SIZE;
             if (longDPP <= paramDPP) {
+                break;
+            }
+            if (depth == 7) {
                 break;
             }
             depth += 1;
@@ -198,8 +203,8 @@ public class Rasterer {
 
     private void calculateImageRange(Map<String, Double> params, Map<String, Object> data) {
         int k = (int) Math.pow(2, (Integer) data.get("depth"));
-        double latIncrement = this.ROOT_DELTA_Y / Math.pow((Integer) data.get("depth"), 2);
-        double longIncrement = this.ROOT_DELTA_X / Math.pow((Integer) data.get("depth"), 2);
+        double latIncrement = this.ROOT_DELTA_Y / k;
+        double longIncrement = this.ROOT_DELTA_X / k;
         double ULLON = params.get("ullon");
         double ULLAT = params.get("ullat");
         double LRLON = params.get("lrlon");
@@ -208,7 +213,7 @@ public class Rasterer {
         double mutativeULLAT = MapServer.ROOT_ULLAT;
 
         // finding latitude data
-        if (ULLAT < MapServer.ROOT_ULLAT) {
+        if (ULLAT > MapServer.ROOT_ULLAT) {
             data.put("rastererULLAT", MapServer.ROOT_ULLAT);
             data.put("y0", 0);
         }
@@ -216,15 +221,18 @@ public class Rasterer {
             data.put("rastererLRLAT", MapServer.ROOT_LRLON);
             data.put("y1", k - 1);
         }
-        if (!data.containsKey("y0") && !data.containsKey("y1")) {
+        if (!data.containsKey("y0") || !data.containsKey("y1")) {
             for (int i = 0; i < k; i += 1) {
-                if (ULLAT >= mutativeULLAT && ULLAT <= (mutativeULLAT + latIncrement)) {
+                if (ULLAT <= mutativeULLAT && ULLAT >= (mutativeULLAT - latIncrement)) {
                     data.put("raster_ul_lat", mutativeULLAT);
                     data.put("y0", i);
                 }
-                if (LRLAT <= (mutativeULLAT += latIncrement)) {
+                if (LRLAT <= mutativeULLAT && LRLAT >= (mutativeULLAT -= latIncrement)) {
                     data.put("raster_lr_lat", mutativeULLAT);
                     data.put("y1", i);
+                }
+                if (data.containsKey("y0") && data.containsKey("y1")) {
+                    break;
                 }
             }
         }
@@ -238,13 +246,13 @@ public class Rasterer {
             data.put("rastererLRLON", MapServer.ROOT_LRLON);
             data.put("x1", k - 1);
         }
-        if (!data.containsKey("x0") && !data.containsKey("x1")) {
+        if (!data.containsKey("x0") || !data.containsKey("x1")) {
             for (int i = 0; i < k; i += 1) {
                 if (ULLON >= mutativeULLON && ULLON <= (mutativeULLON + longIncrement)) {
                     data.put("raster_ul_lon", mutativeULLON);
                     data.put("x0", i);
                 }
-                if (ULLAT <= (mutativeULLON += longIncrement)) {
+                if (LRLON >= mutativeULLON && LRLON <= (mutativeULLON += longIncrement)) {
                     data.put("raster_lr_lon", mutativeULLON);
                     data.put("x1", i);
                 }
@@ -258,11 +266,13 @@ public class Rasterer {
         int y0 = (int) data.get("y0");
         int y1 = (int) data.get("y1");
         int depth = (int) data.get("depth");
-        String[][] renderGrid = new String[(y1 - y0) + 1][(x1 - x0) + 1];
+        int row = (y1 - y0) + 1;
+        int col = (x1 - x0) + 1;
+        String[][] renderGrid = new String[row][col];
 
-        for (int i = x0; i <= x1; i += 1) {
-            for (int ii = y0; ii <= y1; ii += 1) {
-                renderGrid[ii][i] = "d" + depth + "_x" + i + "_y" + ii + ".png";
+        for (int i = 0; i < col; i += 1) {
+            for (int ii = 0; ii < row; ii += 1) {
+                renderGrid[ii][i] = "d" + depth + "_x" + (x0 + i) + "_y" + (y0 + ii) + ".png";
             }
         }
 
