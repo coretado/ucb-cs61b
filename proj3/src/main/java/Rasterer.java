@@ -214,11 +214,11 @@ public class Rasterer {
 
         // finding latitude data
         if (ULLAT > MapServer.ROOT_ULLAT) {
-            data.put("rastererULLAT", MapServer.ROOT_ULLAT);
+            data.put("raster_ul_lat", MapServer.ROOT_ULLAT);
             data.put("y0", 0);
         }
         if (LRLAT < MapServer.ROOT_LRLAT) {
-            data.put("rastererLRLAT", MapServer.ROOT_LRLON);
+            data.put("raster_lr_lat", MapServer.ROOT_LRLON);
             data.put("y1", k - 1);
         }
         if (!data.containsKey("y0") || !data.containsKey("y1")) {
@@ -239,11 +239,11 @@ public class Rasterer {
 
         // finding longitude data
         if (ULLON < MapServer.ROOT_ULLON) {
-            data.put("rastererULLON", MapServer.ROOT_ULLON);
+            data.put("raster_ul_lon", MapServer.ROOT_ULLON);
             data.put("x0", 0);
         }
         if (LRLON > MapServer.ROOT_LRLON) {
-            data.put("rastererLRLON", MapServer.ROOT_LRLON);
+            data.put("raster_lr_lon", MapServer.ROOT_LRLON);
             data.put("x1", k - 1);
         }
         if (!data.containsKey("x0") || !data.containsKey("x1")) {
