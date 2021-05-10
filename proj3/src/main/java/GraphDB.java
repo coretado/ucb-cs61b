@@ -6,7 +6,7 @@ import java.io.IOException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Graph for storing all of the intersection (vertex) and road (edge) information.
@@ -20,6 +20,9 @@ import java.util.ArrayList;
 public class GraphDB {
     /** Your instance variables for storing the graph. You should consider
      * creating helper classes, e.g. Node, Edge, etc. */
+    private int V; // num vertices - where vertex = Node
+    private int E; // num edges
+    private final Map<Long, Node> vertices;
 
     /**
      * Example constructor shows how to create and start an XML parser.
@@ -27,6 +30,10 @@ public class GraphDB {
      * @param dbPath Path to the XML file to be parsed.
      */
     public GraphDB(String dbPath) {
+        // initialize Hashmap for easy Vertex ID lookup
+        this.vertices = new HashMap<>();
+
+        // XML parsing
         try {
             File inputFile = new File(dbPath);
             FileInputStream inputStream = new FileInputStream(inputFile);
@@ -39,7 +46,44 @@ public class GraphDB {
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
         }
+
+        // prune marooned vertices
         clean();
+    }
+
+    private class Node {
+        private long id;
+        private double lat;
+        private double lon;
+        private final List<Long> adj = new ArrayList<>();
+
+        public long getId() {
+            return this.id;
+        }
+
+        public double getLat() {
+            return this.lat;
+        }
+
+        public double getLon() {
+            return this.lon;
+        }
+
+        public void setId(long id) {
+            this.id = id;
+        }
+
+        public void setLat(double lat) {
+            this.lat = lat;
+        }
+
+        public void setLon(double lon) {
+            this.lon = lon;
+        }
+
+        public List<Long> getAdj() {
+            return this.adj;
+        }
     }
 
     /**
@@ -58,6 +102,16 @@ public class GraphDB {
      */
     private void clean() {
         // TODO: Your code here.
+        // This function is called after the SAX parser is run, so I'm assuming that all edges
+        // will have been added by this point, and I can just do an iteration over the keyset
+        // of the Vertices and prune Nodes with empty adjacency lists
+        Iterable<Long> ids = this.vertices();
+        for (Long id : ids) {
+            Iterable<Long> adj = this.adjacent(id);
+            if (!adj.iterator().hasNext()) {
+                this.vertices.remove(id);
+            }
+        }
     }
 
     /**
@@ -66,7 +120,7 @@ public class GraphDB {
      */
     Iterable<Long> vertices() {
         //YOUR CODE HERE, this currently returns only an empty list.
-        return new ArrayList<Long>();
+        return this.vertices.keySet();
     }
 
     /**
@@ -75,7 +129,11 @@ public class GraphDB {
      * @return An iterable of the ids of the neighbors of v.
      */
     Iterable<Long> adjacent(long v) {
-        return null;
+        Node found = this.vertices.get(v);
+        if (found == null) {
+            throw new IllegalArgumentException("The id: " + v + ", could not be found in Vertex map!");
+        }
+        return new ArrayList<>(found.adj); // return defensively copied array
     }
 
     /**
@@ -136,7 +194,23 @@ public class GraphDB {
      * @return The id of the node in the graph closest to the target.
      */
     long closest(double lon, double lat) {
-        return 0;
+        double currentDelta = Double.MAX_VALUE;
+        Node C = null;
+        Iterable<Long> ids = this.vertices();
+
+        for (Long id : ids) {
+            Node N = this.vertices.get(id);
+            double calcDistance = distance(lon, lat, N.getLon(), N.getLat());
+            if (calcDistance < currentDelta) {
+                C = N;
+            }
+        }
+
+        if (C == null) {
+            return 0;
+        }
+
+        return C.getId();
     }
 
     /**
@@ -145,7 +219,11 @@ public class GraphDB {
      * @return The longitude of the vertex.
      */
     double lon(long v) {
-        return 0;
+        Node found = this.vertices.get(v);
+        if (found == null) {
+            throw new IllegalArgumentException("Id of: " + v + ", could not be found in Vertex map!");
+        }
+        return found.getLon();
     }
 
     /**
@@ -154,6 +232,10 @@ public class GraphDB {
      * @return The latitude of the vertex.
      */
     double lat(long v) {
-        return 0;
+        Node found = this.vertices.get(v);
+        if (found == null) {
+            throw new IllegalArgumentException("Id of: " + v + ", could not be found in Vertex map!");
+        }
+        return found.getLat();
     }
 }
