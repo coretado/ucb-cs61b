@@ -20,9 +20,30 @@ import java.util.*;
 public class GraphDB {
     /** Your instance variables for storing the graph. You should consider
      * creating helper classes, e.g. Node, Edge, etc. */
-    private int V; // num vertices - where vertex = Node
-    private int E; // num edges
     private final Map<Long, Node> vertices;
+
+    /* Helper Classes Start */
+
+    // Representation of a Vertex
+    private static class Node {
+        private long id;
+        private double lat;
+        private double lon;
+        private final List<Long> adj = new ArrayList<>();
+    }
+
+    // Representation of an Edge
+    public static class Edge {
+        private final long O; // origin
+        private final long D; // destination
+
+        public Edge(long O, long D) {
+            this.O = O;
+            this.D = D;
+        }
+    }
+
+    /* Helper Classes End */
 
     /**
      * Example constructor shows how to create and start an XML parser.
@@ -51,41 +72,6 @@ public class GraphDB {
         clean();
     }
 
-    private class Node {
-        private long id;
-        private double lat;
-        private double lon;
-        private final List<Long> adj = new ArrayList<>();
-
-        public long getId() {
-            return this.id;
-        }
-
-        public double getLat() {
-            return this.lat;
-        }
-
-        public double getLon() {
-            return this.lon;
-        }
-
-        public void setId(long id) {
-            this.id = id;
-        }
-
-        public void setLat(double lat) {
-            this.lat = lat;
-        }
-
-        public void setLon(double lon) {
-            this.lon = lon;
-        }
-
-        public List<Long> getAdj() {
-            return this.adj;
-        }
-    }
-
     /**
      * Helper to process strings into their "cleaned" form, ignoring punctuation and capitalization.
      * @param s Input string.
@@ -107,9 +93,8 @@ public class GraphDB {
         // of the Vertices and prune Nodes with empty adjacency lists
         Iterable<Long> ids = this.vertices();
         for (Long id : ids) {
-            Iterable<Long> adj = this.adjacent(id);
-            if (!adj.iterator().hasNext()) {
-                this.vertices.remove(id);
+            if (this.maroonedNode(id)) {
+                this.removeNode(id);
             }
         }
     }
@@ -200,7 +185,7 @@ public class GraphDB {
 
         for (Long id : ids) {
             Node N = this.vertices.get(id);
-            double calcDistance = distance(lon, lat, N.getLon(), N.getLat());
+            double calcDistance = distance(lon, lat, N.lon, N.lat);
             if (calcDistance < currentDelta) {
                 C = N;
             }
@@ -210,7 +195,7 @@ public class GraphDB {
             return 0;
         }
 
-        return C.getId();
+        return C.id;
     }
 
     /**
@@ -223,7 +208,7 @@ public class GraphDB {
         if (found == null) {
             throw new IllegalArgumentException("Id of: " + v + ", could not be found in Vertex map!");
         }
-        return found.getLon();
+        return found.lon;
     }
 
     /**
@@ -236,6 +221,61 @@ public class GraphDB {
         if (found == null) {
             throw new IllegalArgumentException("Id of: " + v + ", could not be found in Vertex map!");
         }
-        return found.getLat();
+        return found.lat;
+    }
+
+    /**
+     * Adds a new Node to the Vertices HashMap to allow for Vertex lookup by id
+     * Note: Vertex is equivalent to a Node from the dataset
+     * @param id The id of the Vertex
+     * @param lat The latitude of the Vertex
+     * @param lon The longitude of the Vertex
+     */
+    public void addNode(long id, double lat, double lon) {
+        if (this.vertices.containsKey(id)) {
+            return;
+        }
+        Node N = new Node();
+        N.id = id;
+        N.lat = lat;
+        N.lon = lon;
+        this.vertices.put(id, N);
+    }
+
+    /**
+     * Adds a new bi-directional edge between the Origin Node id and Destination Node id
+     * @param edge
+     */
+    public void addEdge(Edge edge) {
+        Node N = this.vertices.get(edge.O);
+        Node D = this.vertices.get(edge.D);
+        if (N == null || D == null) {
+            throw new IllegalArgumentException("Edge id's: <" + edge.O + ", " + edge.D + ">, could not be found in Vertex map!");
+        }
+        // bi-directional edge connection
+        N.adj.add(edge.D);
+        D.adj.add(edge.O);
+    }
+
+    /**
+     * Checks to see if the Vertex with the corresponding id has an empty adjacency list
+     * Note: Vertex is equivalent to a Node from the dataset
+     * @param id The id of the Vertex to check
+     * @return A boolean indicating whether or not this Vertex has no connections
+     */
+    private boolean maroonedNode(long id) {
+        Node N = this.vertices.get(id);
+        if (N == null) {
+            throw new IllegalArgumentException("Id of: " + id + ", could not be found in Vertex map!");
+        }
+        return N.adj.isEmpty();
+    }
+
+    /**
+     * Removes a Vertex from the Vertices HashMap with the corresponding id
+     * @param id The id of the Vertex to prune
+     */
+    private void removeNode(long id) {
+        this.vertices.remove(id);
     }
 }
