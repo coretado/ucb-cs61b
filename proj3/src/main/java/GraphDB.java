@@ -91,8 +91,8 @@ public class GraphDB {
         // This function is called after the SAX parser is run, so I'm assuming that all edges
         // will have been added by this point, and I can just do an iteration over the keyset
         // of the Vertices and prune Nodes with empty adjacency lists
-        Iterable<Long> ids = this.vertices();
-        for (Long id : ids) {
+        Iterable<Long> iterable = this.vertices();
+        for (Long id : iterable) {
             if (this.maroonedNode(id)) {
                 this.removeNode(id);
             }
@@ -105,7 +105,7 @@ public class GraphDB {
      */
     Iterable<Long> vertices() {
         //YOUR CODE HERE, this currently returns only an empty list.
-        return this.vertices.keySet();
+        return new ArrayList<>(this.vertices.keySet());
     }
 
     /**
