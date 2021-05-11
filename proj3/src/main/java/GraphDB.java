@@ -25,7 +25,7 @@ public class GraphDB {
     /* Helper Classes Start */
 
     // Representation of a Vertex
-    private static class Node {
+    public static class Node {
         private long id;
         private double lat;
         private double lon;

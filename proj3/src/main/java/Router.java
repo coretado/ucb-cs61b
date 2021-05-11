@@ -1,5 +1,4 @@
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,7 +24,52 @@ public class Router {
      */
     public static List<Long> shortestPath(GraphDB g, double stlon, double stlat,
                                           double destlon, double destlat) {
-        return null; // FIXME
+        long sid = g.closest(stlon, stlat);
+        long eid = g.closest(destlon, destlat);
+        PriorityQueue<RouteSearchNode> pq = new PriorityQueue<RouteSearchNode>();
+        pq.add(new RouteSearchNode(sid, g.distance(sid, eid), null));
+        RouteSearchNode state;
+        while (true) {
+            RouteSearchNode min = pq.remove();
+            if (min.id == eid) {
+                state = min;
+                break;
+            }
+            Iterable<Long> adj = g.adjacent(min.id);
+            for (Long id : adj) {
+                pq.add(new RouteSearchNode(id, g.distance(min.id, id) + g.distance(id, eid), min));
+            }
+        }
+
+        Stack<Long> path = new Stack<>();
+
+        for ( ; state != null; state = state.prev) {
+            path.push(state.id);
+        }
+
+        List<Long> res = new ArrayList<>(path);
+
+        return res; // FIXME
+    }
+
+    private static class RouteSearchNode implements Comparable<RouteSearchNode> {
+        private final double traversedAndTravel;
+        private final long id;
+        private final RouteSearchNode prev;
+
+        public RouteSearchNode(
+                long id,
+                double traversedAndTravel,
+                RouteSearchNode prev
+        ) {
+            this.id = id;
+            this.traversedAndTravel = traversedAndTravel;
+            this.prev = prev;
+        }
+
+        public int compareTo(RouteSearchNode O) {
+            return Double.compare(this.traversedAndTravel, O.traversedAndTravel);
+        }
     }
 
     /**
