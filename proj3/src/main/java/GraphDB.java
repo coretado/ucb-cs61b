@@ -187,6 +187,7 @@ public class GraphDB {
             Node N = this.vertices.get(id);
             double calcDistance = distance(lon, lat, N.lon, N.lat);
             if (calcDistance < currentDelta) {
+                currentDelta = calcDistance;
                 C = N;
             }
         }
