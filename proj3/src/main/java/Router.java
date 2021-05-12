@@ -26,49 +26,59 @@ public class Router {
                                           double destlon, double destlat) {
         long sid = g.closest(stlon, stlat);
         long eid = g.closest(destlon, destlat);
-        PriorityQueue<RouteSearchNode> pq = new PriorityQueue<RouteSearchNode>();
-        pq.add(new RouteSearchNode(sid, g.distance(sid, eid), null));
+        PriorityQueue<RouteSearchNode> pq = new PriorityQueue<>();
+
+        pq.add(new RouteSearchNode(sid, 0.0, 0.0, g.distance(sid, eid), null));
+
         RouteSearchNode state;
+
         while (true) {
             RouteSearchNode min = pq.remove();
+
             if (min.id == eid) {
                 state = min;
                 break;
             }
+
             Iterable<Long> adj = g.adjacent(min.id);
-            for (Long id : adj) {
-                pq.add(new RouteSearchNode(id, g.distance(min.id, id) + g.distance(id, eid), min));
+            if (min.prev == null) {
+                for (Long id : adj) {
+                    pq.add(new RouteSearchNode(id, 0.0, g.distance(min.id, id), g.distance(id, eid), min));
+                }
+            } else {
+                for (Long id: adj) {
+                    pq.add(new RouteSearchNode(id, min.T, g.distance(min.id, id), g.distance(id, eid), min));
+                }
             }
         }
 
-        Stack<Long> path = new Stack<>();
-
+        Stack<Long> hold = new Stack<>();
         for ( ; state != null; state = state.prev) {
-            path.push(state.id);
+            hold.push(state.id);
         }
-
-        List<Long> res = new ArrayList<>(path);
+        List<Long> res = new ArrayList<>();
+        while (!hold.empty()) {
+            res.add(hold.pop());
+        }
 
         return res; // FIXME
     }
 
     private static class RouteSearchNode implements Comparable<RouteSearchNode> {
-        private final double traversedAndTravel;
         private final long id;
+        private final double T;
+        private final double P;
         private final RouteSearchNode prev;
 
-        public RouteSearchNode(
-                long id,
-                double traversedAndTravel,
-                RouteSearchNode prev
-        ) {
+        public RouteSearchNode(long id, double traversed, double travel, double heuristic, RouteSearchNode prev) {
             this.id = id;
-            this.traversedAndTravel = traversedAndTravel;
+            this.T = traversed + travel;
+            this.P = traversed + travel + heuristic;
             this.prev = prev;
         }
 
         public int compareTo(RouteSearchNode O) {
-            return Double.compare(this.traversedAndTravel, O.traversedAndTravel);
+            return Double.compare(this.P, O.P);
         }
     }
 
