@@ -28,57 +28,85 @@ public class Router {
         long eid = g.closest(destlon, destlat);
         PriorityQueue<RouteSearchNode> pq = new PriorityQueue<>();
 
-        pq.add(new RouteSearchNode(sid, 0.0, 0.0, g.distance(sid, eid), null));
+        pq.add(new RouteSearchNode(sid, null, 0.0, 0.0, 0.0));
+        // "Best" is really these two maps
+        Map<Long, Double> best = new HashMap<>();
+        Map<Long, Long> pathed = new HashMap<>();
+        Long state = eid;
 
-        RouteSearchNode state;
+        best.put(sid, 0.0);
+        pathed.put(sid, sid);
 
         while (true) {
-            RouteSearchNode min = pq.remove();
+            RouteSearchNode prev = pq.remove();
 
-            if (min.id == eid) {
-                state = min;
+            if (prev.id == eid) {
                 break;
             }
 
-            Iterable<Long> adj = g.adjacent(min.id);
-            if (min.prev == null) {
+            Iterable<Long> adj = g.adjacent(prev.id);
+            if (prev.prevId == null) {
                 for (Long id : adj) {
-                    pq.add(new RouteSearchNode(id, 0.0, g.distance(min.id, id), g.distance(id, eid), min));
+                    double E = g.distance(prev.id, id); // d(v, w)
+                    double H = g.distance(id, eid); // d(w, end) == h(w)
+                    RouteSearchNode RSN = new RouteSearchNode(id, prev.id, prev.DSW, E, H);
+                    best.put(id, prev.DSW + E); // d(s, w)
+                    pathed.put(id, prev.id);
+                    pq.add(RSN);
                 }
             } else {
-                for (Long id: adj) {
-                    pq.add(new RouteSearchNode(id, min.T, g.distance(min.id, id), g.distance(id, eid), min));
+                for (Long id : adj) {
+                    // if id doesn't exist, simply add it to best
+                    if (!best.containsKey(id)) {
+                        double E = g.distance(prev.id, id); // d(v, w)
+                        double H = g.distance(id, eid); // d(w, end) == h(w)
+                        RouteSearchNode RSN = new RouteSearchNode(id, prev.id, prev.DSW, E, H);
+                        best.put(id, prev.DSW + E); // d(s, w)
+                        pathed.put(id, prev.id);
+                        pq.add(RSN);
+                        continue;
+                    }
+
+                    double E = g.distance(prev.id, id); // d(v, w)
+                    double DSW = prev.DSW + E; // d(s, w)
+                    // if id exists, AND the traversed from source plus euclidean beats it
+                    if (best.containsKey(id) && best.get(id) > DSW) {
+                        double H = g.distance(id, eid); // d(w, end) == h(w)
+                        RouteSearchNode RSN = new RouteSearchNode(id, prev.id, prev.DSW, E, H);
+                        best.put(id, DSW); // d(s, w)
+                        pathed.put(id, prev.id);
+                        pq.add(RSN);
+                    }
                 }
             }
         }
 
-        Stack<Long> hold = new Stack<>();
-        for ( ; state != null; state = state.prev) {
-            hold.push(state.id);
-        }
         List<Long> res = new ArrayList<>();
-        while (!hold.empty()) {
-            res.add(hold.pop());
+        while (state != sid) {
+            res.add(state);
+            state = pathed.get(state);
         }
-
-        return res; // FIXME
+        res.add(sid);
+        Collections.reverse(res);
+        return res;
     }
 
     private static class RouteSearchNode implements Comparable<RouteSearchNode> {
         private final long id;
-        private final double T;
+        private final double DSW;
         private final double P;
-        private final RouteSearchNode prev;
+        private final Long prevId;
 
-        public RouteSearchNode(long id, double traversed, double travel, double heuristic, RouteSearchNode prev) {
+        public RouteSearchNode(long id, Long prevId, double dsv, double edvw, double hw) {
             this.id = id;
-            this.T = traversed + travel;
-            this.P = traversed + travel + heuristic;
-            this.prev = prev;
+            this.prevId = prevId;
+            this.DSW = dsv + edvw;
+            this.P = dsv + edvw + hw;
         }
 
-        public int compareTo(RouteSearchNode O) {
-            return Double.compare(this.P, O.P);
+        @Override
+        public int compareTo(RouteSearchNode o) {
+            return Double.compare(this.P, o.P);
         }
     }
 
@@ -87,7 +115,7 @@ public class Router {
      * @param g The graph to use.
      * @param route The route to translate into directions. Each element
      *              corresponds to a node from the graph in the route.
-     * @return A list of NavigatiionDirection objects corresponding to the input
+     * @return A list of NavigationDirection objects corresponding to the input
      * route.
      */
     public static List<NavigationDirection> routeDirections(GraphDB g, List<Long> route) {
