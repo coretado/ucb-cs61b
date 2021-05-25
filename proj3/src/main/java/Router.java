@@ -119,7 +119,55 @@ public class Router {
      * route.
      */
     public static List<NavigationDirection> routeDirections(GraphDB g, List<Long> route) {
-        return null; // FIXME
+        List<NavigationDirection> nav = new ArrayList<>();
+        Long state = route.get(0);
+
+        NavigationDirection start = new NavigationDirection();
+        start.direction = 0;
+        start.way = g.fetchWayName(route.get(0));
+        start.distance = 0.0;
+        nav.add(start);
+
+        Iterator<Long> iter = route.iterator();
+        iter.next();
+
+        while (iter.hasNext()) {
+            Long id = iter.next();
+            nav.get(nav.size() - 1).distance += g.distance(state, id);
+            if (!g.fetchWayName(state).equals(g.fetchWayName(id))) {
+                NavigationDirection step = new NavigationDirection();
+                step.way = g.fetchWayName(id);
+                step.direction = bearingHelper(state, id, g);
+                step.distance = 0.0;
+                state = id;
+            }
+        }
+
+        return nav; // FIXME
+    }
+
+    private static int bearingHelper(Long from, Long to, GraphDB g) {
+        double bearing = g.bearing(from, to);
+
+        if (bearing >= -15.0 && bearing <= 15.0) { // straight
+            return 1;
+        }
+        if (bearing < -15.0 && bearing >= -30.0) { // slight left
+            return 2;
+        }
+        if (bearing > 15.0 && bearing <= 30.0) { // slight right
+            return 3;
+        }
+        if (bearing < -30.0 && bearing >= -100.0) { // left
+            return 5;
+        }
+        if (bearing > 30.0 && bearing <= 100.0) { // right
+            return 4;
+        }
+        if (bearing < -100.0) { // sharp left
+            return 6;
+        }
+        return 7; // sharp right
     }
 
 

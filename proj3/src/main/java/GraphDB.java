@@ -29,6 +29,7 @@ public class GraphDB {
         private long id;
         private double lat;
         private double lon;
+        private String way;
         private final List<Long> adj = new ArrayList<>();
     }
 
@@ -256,6 +257,32 @@ public class GraphDB {
         // bi-directional edge connection
         N.adj.add(edge.D);
         D.adj.add(edge.O);
+    }
+
+    /**
+     * Adds the name of a way to a Location Node
+     * @param id - The key of a Location Node
+     * @param way - The name of a Way
+     */
+    public void addWayName(Long id, String way) {
+        Node N = this.vertices.get(id);
+        if (N == null) {
+            throw new IllegalArgumentException("Id of: " + id + ", could not be found in Vertex map!");
+        }
+        N.way = way;
+    }
+
+    /**
+     * Fetches the name of a way tied to a Location Node
+     * @param id - The key of a Location Node
+     * @return - The name of a way tied to a Location Node
+     */
+    public String fetchWayName(Long id) {
+        Node N = this.vertices.get(id);
+        if (N == null) {
+            throw new IllegalArgumentException("Id of: " + id + ", could not be found in Vertex map!");
+        }
+        return N.way;
     }
 
     /**

@@ -39,6 +39,7 @@ public class GraphBuildingHandler extends DefaultHandler {
     private boolean validWay = false;
     private final List<Long> wayEdges = new ArrayList<>();
     private final List<GraphDB.Edge> edges = new ArrayList<>();
+    private final StringBuilder wayName = new StringBuilder();
 
     /**
      * Create a new GraphBuildingHandler.
@@ -114,6 +115,7 @@ public class GraphBuildingHandler extends DefaultHandler {
                     this.validWay = true;
                 }
             } else if (k.equals("name")) {
+                this.wayName.append(v);
                 //System.out.println("Way Name: " + v);
             }
 //            System.out.println("Tag with k=" + k + ", v=" + v + ".");
@@ -150,6 +152,10 @@ public class GraphBuildingHandler extends DefaultHandler {
                 for (GraphDB.Edge E : this.edges) {
                     this.g.addEdge(E);
                 }
+                String finalWayName = this.wayName.toString();
+                for (Long id : this.wayEdges) {
+                    this.g.addWayName(id, finalWayName);
+                }
             }
             this.resetWayState();
         }
@@ -158,6 +164,7 @@ public class GraphBuildingHandler extends DefaultHandler {
     private void resetWayState() {
         this.edges.clear();
         this.wayEdges.clear();
+        this.wayName.setLength(0);
         this.validWay = false;
     }
 }
