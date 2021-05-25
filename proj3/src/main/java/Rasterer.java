@@ -223,14 +223,15 @@ public class Rasterer {
         }
         if (!data.containsKey("y0") || !data.containsKey("y1")) {
             for (int i = 0; i < k; i += 1) {
-                if (ULLAT <= mutativeULLAT && ULLAT >= (mutativeULLAT - latIncrement)) {
+                if (!data.containsKey("y0") && ULLAT <= mutativeULLAT && ULLAT >= (mutativeULLAT - latIncrement)) {
                     data.put("raster_ul_lat", mutativeULLAT);
                     data.put("y0", i);
                 }
-                if (LRLAT <= mutativeULLAT && LRLAT >= (mutativeULLAT -= latIncrement)) {
+                if (!data.containsKey("y1") && LRLAT <= mutativeULLAT && LRLAT >= (mutativeULLAT - latIncrement)) {
                     data.put("raster_lr_lat", mutativeULLAT);
                     data.put("y1", i);
                 }
+                mutativeULLAT -= latIncrement;
                 if (data.containsKey("y0") && data.containsKey("y1")) {
                     break;
                 }
@@ -248,13 +249,17 @@ public class Rasterer {
         }
         if (!data.containsKey("x0") || !data.containsKey("x1")) {
             for (int i = 0; i < k; i += 1) {
-                if (ULLON >= mutativeULLON && ULLON <= (mutativeULLON + longIncrement)) {
+                if (!data.containsKey("x0") && ULLON >= mutativeULLON && ULLON <= (mutativeULLON + longIncrement)) {
                     data.put("raster_ul_lon", mutativeULLON);
                     data.put("x0", i);
                 }
-                if (LRLON >= mutativeULLON && LRLON <= (mutativeULLON += longIncrement)) {
+                if (!data.containsKey("x1") && LRLON >= mutativeULLON && LRLON <= (mutativeULLON + longIncrement)) {
                     data.put("raster_lr_lon", mutativeULLON);
                     data.put("x1", i);
+                }
+                mutativeULLON += longIncrement;
+                if (data.containsKey("x0") && data.containsKey("x1")) {
+                    break;
                 }
             }
         }
