@@ -151,10 +151,18 @@ public class Rasterer {
         results.put("render_grid", data.get("render_grid"));
         results.put("raster_ul_lon", data.get("raster_ul_lon"));
         results.put("raster_ul_lat", data.get("raster_ul_lat"));
-        results.put("raster_lr_lon", data.get("raster_ul_lon"));
-        results.put("raster_lr_lat", data.get("raster_ul_lat"));
-        results.put("width", params.get("width"));
-        results.put("height", params.get("height"));
+        results.put("raster_lr_lon", data.get("raster_lr_lon"));
+        results.put("raster_lr_lat", data.get("raster_lr_lat"));
+        if (params.get("width") == null) {
+            results.put("width", 256);
+        } else {
+            results.put("width", params.get("width"));
+        }
+        if (params.get("height") == null) {
+            results.put("height", 256);
+        } else {
+            results.put("height", params.get("height"));
+        }
         results.put("depth", data.get("depth"));
         results.put("query_success", true);
     }
@@ -228,7 +236,7 @@ public class Rasterer {
                     data.put("y0", i);
                 }
                 if (!data.containsKey("y1") && LRLAT <= mutativeULLAT && LRLAT >= (mutativeULLAT - latIncrement)) {
-                    data.put("raster_lr_lat", mutativeULLAT);
+                    data.put("raster_lr_lat", mutativeULLAT - latIncrement);
                     data.put("y1", i);
                 }
                 mutativeULLAT -= latIncrement;
@@ -254,7 +262,7 @@ public class Rasterer {
                     data.put("x0", i);
                 }
                 if (!data.containsKey("x1") && LRLON >= mutativeULLON && LRLON <= (mutativeULLON + longIncrement)) {
-                    data.put("raster_lr_lon", mutativeULLON);
+                    data.put("raster_lr_lon", mutativeULLON + longIncrement);
                     data.put("x1", i);
                 }
                 mutativeULLON += longIncrement;
