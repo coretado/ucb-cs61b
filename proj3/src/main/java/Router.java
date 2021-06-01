@@ -121,6 +121,8 @@ public class Router {
     public static List<NavigationDirection> routeDirections(GraphDB g, List<Long> route) {
         List<NavigationDirection> nav = new ArrayList<>();
         Long state = route.get(0);
+        double path = 0.0;
+        Long pathId = route.get(0);
 
         NavigationDirection start = new NavigationDirection();
         start.direction = 0;
@@ -133,12 +135,15 @@ public class Router {
 
         while (iter.hasNext()) {
             Long id = iter.next();
-            nav.get(nav.size() - 1).distance += g.distance(state, id);
+            path += g.distance(pathId, id);
+            pathId = id;
             if (!g.fetchWayName(state).equals(g.fetchWayName(id))) {
+                nav.get(nav.size() - 1).distance = path;
                 NavigationDirection step = new NavigationDirection();
                 step.way = g.fetchWayName(id);
                 step.direction = bearingHelper(state, id, g);
                 step.distance = 0.0;
+                nav.add(step);
                 state = id;
             }
         }
