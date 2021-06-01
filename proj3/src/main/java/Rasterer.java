@@ -89,65 +89,73 @@ public class Rasterer {
      * Helper function used to catch edge cases of coordinate inputs. These bad inputs include:
      * - if the lower latitude is somehow higher than the origin latitude
      * - if the rightmost longitude is somehow less than the origin longitude
-     * - if the coordinates provided do not generate a rectangular query box that intersects with the ROOT coordinates
+     * - if the coordinates provided do not generate a rectangular query box that intersects
+     *   with the ROOT coordinates
      *
      * @param params Map object from server request containing BearMaps Request parameters
      * @return Boolean specifying whether the BearMaps request violates the above conditions
      */
     private boolean hasBadCoordinates(Map<String, Double> params) {
-        Double PARAM_ULLON = params.get("ullon");
-        Double PARAM_LRLON = params.get("lrlon");
-        Double PARAM_ULLAT = params.get("ullat");
-        Double PARAM_LRLAT = params.get("lrlat");
+        Double paramULLON = params.get("ullon");
+        Double paramLRLON = params.get("lrlon");
+        Double paramULLAT = params.get("ullat");
+        Double paramLRLAT = params.get("lrlat");
 
-        if (PARAM_LRLAT > PARAM_ULLAT) {
+        if (paramLRLAT > paramULLAT) {
             return true;
         }
-        if (PARAM_ULLON > PARAM_LRLON) {
+        if (paramULLON > paramLRLON) {
             return true;
         }
-        return this.hasIntersectionWithRoot(PARAM_ULLON, PARAM_LRLON, PARAM_ULLAT, PARAM_LRLAT);
+        return this.hasIntersectionWithRoot(paramULLON, paramLRLON, paramULLAT, paramLRLAT);
     }
 
     /**
-     * Helper function to determine if BearMaps request makes a rectangular query box that is contained within the ROOT
-     * coordinates
+     * Helper function to determine if BearMaps request makes a rectangular
+     * query box that is contained within the ROOT coordinates
      *
-     * @param PARAM_ULLON - upper left longitude of request
-     * @param PARAM_LRLON - lower right longitude of request
-     * @param PARAM_ULLAT - upper left latitude of request
-     * @param PARAM_LRLAT - lower left latitude of request
-     * @return Boolean specifying whether the BearMaps request does not intersect the ROOT coordinates
+     * @param paramULLON - upper left longitude of request
+     * @param paramLRLON - lower right longitude of request
+     * @param paramULLAT - upper left latitude of request
+     * @param paramLRLAT - lower left latitude of request
+     * @return Boolean specifying whether the BearMaps request does not
+     *         intersect the ROOT coordinates
      */
     private boolean hasIntersectionWithRoot(
-            Double PARAM_ULLON,
-            Double PARAM_LRLON,
-            Double PARAM_ULLAT,
-            Double PARAM_LRLAT
+            Double paramULLON,
+            Double paramLRLON,
+            Double paramULLAT,
+            Double paramLRLAT
     ) {
         // x3 > x2
-        if (PARAM_ULLON > MapServer.ROOT_LRLON) {
+        if (paramULLON > MapServer.ROOT_LRLON) {
             return false;
         }
         // x4 < x1
-        if (PARAM_LRLON < MapServer.ROOT_ULLON) {
+        if (paramLRLON < MapServer.ROOT_ULLON) {
             return false;
         }
         // y3 > y2
-        if (PARAM_ULLAT > MapServer.ROOT_LRLAT) {
+        if (paramULLAT > MapServer.ROOT_LRLAT) {
             return false;
         }
         // y4 < y1
-        return !(PARAM_LRLAT < MapServer.ROOT_ULLAT);
+        return !(paramLRLAT < MapServer.ROOT_ULLAT);
     }
 
     /**
-     * Helper function to assign values to results Map. NOTE: Will automatically put query_success to true!
+     * Helper function to assign values to results Map.
+     * NOTE: Will automatically put query_success to true!
      *
      * @param results - Map object
-     * @param data - Helper object containing calculated Render Grid, rasterer Longitude and Latitude, and Depth
+     * @param data - Helper object containing calculated Render Grid,
+     *               rasterer Longitude and Latitude, and Depth
      */
-    private void assignParams(Map<String, Object> results, Map<String, Object> data, Map<String, Double> params) {
+    private void assignParams(
+            Map<String, Object> results,
+            Map<String, Object> data,
+            Map<String, Double> params
+    ) {
         results.put("render_grid", data.get("render_grid"));
         results.put("raster_ul_lon", data.get("raster_ul_lon"));
         results.put("raster_ul_lat", data.get("raster_ul_lat"));
@@ -184,7 +192,8 @@ public class Rasterer {
             double divider = Math.pow(2.0, depth);
 //            double deltaX = depth == 0 ? this.ROOT_DELTA_X : this.ROOT_DELTA_X / divider;
             double deltaX = this.ROOT_DELTA_X / divider;
-            double longDPP = ((MapServer.ROOT_ULLON + deltaX) - MapServer.ROOT_ULLON) / MapServer.TILE_SIZE;
+            double longDPP =
+                    ((MapServer.ROOT_ULLON + deltaX) - MapServer.ROOT_ULLON) / MapServer.TILE_SIZE;
             if (longDPP <= paramDPP) {
                 break;
             }
@@ -197,7 +206,8 @@ public class Rasterer {
     }
 
     /**
-     * Helper function used to generate the String Matrix of filenames needed to render the BearMaps image request
+     * Helper function used to generate the String Matrix of filenames needed
+     * to render the BearMaps image request
      *
      * @param params - BearMaps request object
      * @param data - Local object for response information
@@ -213,29 +223,35 @@ public class Rasterer {
         int k = (int) Math.pow(2, (Integer) data.get("depth"));
         double latIncrement = this.ROOT_DELTA_Y / k;
         double longIncrement = this.ROOT_DELTA_X / k;
-        double ULLON = params.get("ullon");
-        double ULLAT = params.get("ullat");
-        double LRLON = params.get("lrlon");
-        double LRLAT = params.get("lrlat");
+        double ullon = params.get("ullon");
+        double ullat = params.get("ullat");
+        double lrlon = params.get("lrlon");
+        double lrlat = params.get("lrlat");
         double mutativeULLON = MapServer.ROOT_ULLON;
         double mutativeULLAT = MapServer.ROOT_ULLAT;
 
         // finding latitude data
-        if (ULLAT > MapServer.ROOT_ULLAT) {
+        if (ullat > MapServer.ROOT_ULLAT) {
             data.put("raster_ul_lat", MapServer.ROOT_ULLAT);
             data.put("y0", 0);
         }
-        if (LRLAT < MapServer.ROOT_LRLAT) {
+        if (lrlat < MapServer.ROOT_LRLAT) {
             data.put("raster_lr_lat", MapServer.ROOT_LRLON);
             data.put("y1", k - 1);
         }
         if (!data.containsKey("y0") || !data.containsKey("y1")) {
             for (int i = 0; i < k; i += 1) {
-                if (!data.containsKey("y0") && ULLAT <= mutativeULLAT && ULLAT >= (mutativeULLAT - latIncrement)) {
+                if (!data.containsKey("y0")
+                        && ullat <= mutativeULLAT
+                        && ullat >= (mutativeULLAT - latIncrement)
+                ) {
                     data.put("raster_ul_lat", mutativeULLAT);
                     data.put("y0", i);
                 }
-                if (!data.containsKey("y1") && LRLAT <= mutativeULLAT && LRLAT >= (mutativeULLAT - latIncrement)) {
+                if (!data.containsKey("y1")
+                        && lrlat <= mutativeULLAT
+                        && lrlat >= (mutativeULLAT - latIncrement)
+                ) {
                     data.put("raster_lr_lat", mutativeULLAT - latIncrement);
                     data.put("y1", i);
                 }
@@ -247,21 +263,27 @@ public class Rasterer {
         }
 
         // finding longitude data
-        if (ULLON < MapServer.ROOT_ULLON) {
+        if (ullon < MapServer.ROOT_ULLON) {
             data.put("raster_ul_lon", MapServer.ROOT_ULLON);
             data.put("x0", 0);
         }
-        if (LRLON > MapServer.ROOT_LRLON) {
+        if (lrlon > MapServer.ROOT_LRLON) {
             data.put("raster_lr_lon", MapServer.ROOT_LRLON);
             data.put("x1", k - 1);
         }
         if (!data.containsKey("x0") || !data.containsKey("x1")) {
             for (int i = 0; i < k; i += 1) {
-                if (!data.containsKey("x0") && ULLON >= mutativeULLON && ULLON <= (mutativeULLON + longIncrement)) {
+                if (!data.containsKey("x0")
+                        && ullon >= mutativeULLON
+                        && ullon <= (mutativeULLON + longIncrement)
+                ) {
                     data.put("raster_ul_lon", mutativeULLON);
                     data.put("x0", i);
                 }
-                if (!data.containsKey("x1") && LRLON >= mutativeULLON && LRLON <= (mutativeULLON + longIncrement)) {
+                if (!data.containsKey("x1")
+                        && lrlon >= mutativeULLON
+                        && lrlon <= (mutativeULLON + longIncrement)
+                ) {
                     data.put("raster_lr_lon", mutativeULLON + longIncrement);
                     data.put("x1", i);
                 }
