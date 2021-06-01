@@ -33,11 +33,16 @@ public class Router {
         Map<Long, Double> best = new HashMap<>();
         Map<Long, Long> pathed = new HashMap<>();
         Long state = eid;
+        boolean noPath = false;
 
         best.put(sid, 0.0);
         pathed.put(sid, sid);
 
         while (true) {
+            if (pq.size() == 0) {
+                noPath = true;
+                break;
+            }
             RouteSearchNode prev = pq.remove();
 
             if (prev.id == eid) {
@@ -79,6 +84,10 @@ public class Router {
                     }
                 }
             }
+        }
+
+        if (noPath) {
+            return new ArrayList<>();
         }
 
         List<Long> res = new ArrayList<>();

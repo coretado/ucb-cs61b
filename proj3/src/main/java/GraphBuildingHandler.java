@@ -2,7 +2,11 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  *  Parses OSM XML files using an XML SAX parser. Used to construct the graph of roads for
@@ -98,7 +102,8 @@ public class GraphBuildingHandler extends DefaultHandler {
             this.wayEdges.add(Long.parseLong(attributes.getValue("ref")));
             int C = this.wayEdges.size();
             if (C > 1) {
-                this.edges.add(new GraphDB.Edge(this.wayEdges.get(C - 2), this.wayEdges.get(C - 1)));
+                this.edges.add(
+                        new GraphDB.Edge(this.wayEdges.get(C - 2), this.wayEdges.get(C - 1)));
             }
         } else if (activeState.equals("way") && qName.equals("tag")) {
             /* While looking at a way, we found a <tag...> tag. */
