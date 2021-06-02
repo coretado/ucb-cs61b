@@ -1,3 +1,5 @@
+import java.util.Arrays;
+
 /**
  * Class for doing Radix sort
  *
@@ -5,6 +7,8 @@
  *
  */
 public class RadixSort {
+    private static final int radixSize = 256;
+
     /**
      * Does LSD radix sort on the passed in array with the following restrictions:
      * The array can only have ASCII Strings (sequence of 1 byte characters)
@@ -17,7 +21,41 @@ public class RadixSort {
      */
     public static String[] sort(String[] asciis) {
         // TODO: Implement LSD Sort
-        return null;
+        int index = 1;
+        String[] sorted = new String[asciis.length];
+        int max = 0;
+        for (String s : asciis) {
+            if (s.length() > max) {
+                max = s.length();
+            }
+        }
+        int[] count = new int[radixSize];
+        for (int i = 0; i < max; i += 1) {
+            if (i > 0) {
+                reset(count);
+            }
+            for (String ascii : asciis) {
+                if (ascii.length() - index >= 0) {
+                    count[ascii.charAt(ascii.length() - index)] += 1;
+                } else {
+                    count[0] += 1;
+                }
+            }
+            for (int ii = 0; ii < count.length - 2; ii += 1) {
+                count[ii + 1] = count[ii] + count[ii + 1];
+            }
+            for (int ii = count.length - 1; ii > 0; ii -= 1) {
+                int radixIndex = Math.max(asciis[ii].length() - index, 0);
+                sorted[count[radixIndex]] = asciis[ii];
+                count[radixIndex] -= 1;
+            }
+            index += 1;
+        }
+        return sorted;
+    }
+
+    private static void reset(int[] count) {
+        Arrays.fill(count, 0);
     }
 
     /**
