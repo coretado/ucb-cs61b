@@ -21,35 +21,51 @@ public class RadixSort {
      */
     public static String[] sort(String[] asciis) {
         // TODO: Implement LSD Sort
-        int index = 1;
-        String[] sorted = new String[asciis.length];
+        int index = 0;
+        int length = asciis.length;
+        String[] sorted = new String[length];
+        System.arraycopy(asciis, 0, sorted, 0, length);
         int max = 0;
+
         for (String s : asciis) {
             if (s.length() > max) {
                 max = s.length();
             }
         }
+
         int[] count = new int[radixSize];
+        int[] start = new int[radixSize];
+
         for (int i = 0; i < max; i += 1) {
+            String[] hold = new String[length];
+            System.arraycopy(sorted, 0, hold, 0, length);
             if (i > 0) {
                 reset(count);
             }
-            for (String ascii : asciis) {
-                if (ascii.length() - index >= 0) {
-                    count[ascii.charAt(ascii.length() - index)] += 1;
+
+            for (String h : hold) {
+                if (index < h.length()) {
+                    count[h.charAt(index)] += 1;
                 } else {
                     count[0] += 1;
                 }
             }
-            for (int ii = 0; ii < count.length - 2; ii += 1) {
-                count[ii + 1] = count[ii] + count[ii + 1];
+
+            int pos = 0;
+            for (int ii = 0; ii < radixSize; ii += 1) {
+                start[ii] = pos;
+                pos += count[ii];
             }
-            for (int ii = count.length - 1; ii > 0; ii -= 1) {
-                int radixIndex = Math.max(asciis[ii].length() - index, 0);
-                sorted[count[radixIndex]] = asciis[ii];
-                count[radixIndex] -= 1;
+
+            for (String s : sorted) {
+                // this has potential for trouble; I need to find out what the equivalent
+                // of 0 is for a Radix-256
+                int radixIndex = index < s.length() ? (int) s.charAt(index) : 0;
+                hold[start[radixIndex]] = s;
+                start[radixIndex] += 1;
             }
             index += 1;
+            System.arraycopy(hold, 0, sorted, 0, length);
         }
         return sorted;
     }
@@ -82,5 +98,13 @@ public class RadixSort {
     private static void sortHelperMSD(String[] asciis, int start, int end, int index) {
         // Optional MSD helper method for optional MSD radix sort
         return;
+    }
+
+    public static void main(String[] args) {
+        String[] test = new String[]{"the", "quick", "brown", "fox", "jumped", "over", "the", "lazy", "dog"};
+        String[] sorted = sort(test);
+        for (String s : sorted) {
+            System.out.println(s);
+        }
     }
 }
