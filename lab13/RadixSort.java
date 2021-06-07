@@ -8,6 +8,7 @@ import java.util.Arrays;
  */
 public class RadixSort {
     private static final int radixSize = 256;
+    private static final int placeHolder = 42; // '*'
 
     /**
      * Does LSD radix sort on the passed in array with the following restrictions:
@@ -21,7 +22,6 @@ public class RadixSort {
      */
     public static String[] sort(String[] asciis) {
         // TODO: Implement LSD Sort
-        int index = 0;
         int length = asciis.length;
         String[] sorted = new String[length];
         System.arraycopy(asciis, 0, sorted, 0, length);
@@ -33,21 +33,22 @@ public class RadixSort {
             }
         }
 
+        int lsdPointer = max;
         int[] count = new int[radixSize];
         int[] start = new int[radixSize];
 
         for (int i = 0; i < max; i += 1) {
             String[] hold = new String[length];
-            System.arraycopy(sorted, 0, hold, 0, length);
             if (i > 0) {
                 reset(count);
+                reset(start);
             }
 
-            for (String h : hold) {
-                if (index < h.length()) {
-                    count[h.charAt(index)] += 1;
+            for (String s : sorted) {
+                if (s.length() >= lsdPointer) {
+                    count[s.charAt(lsdPointer - 1)] += 1;
                 } else {
-                    count[0] += 1;
+                    count[placeHolder] += 1;
                 }
             }
 
@@ -58,14 +59,12 @@ public class RadixSort {
             }
 
             for (String s : sorted) {
-                // this has potential for trouble; I need to find out what the equivalent
-                // of 0 is for a Radix-256
-                int radixIndex = index < s.length() ? (int) s.charAt(index) : 0;
+                int radixIndex = s.length() >= lsdPointer ? (int) s.charAt(lsdPointer - 1) : placeHolder;
                 hold[start[radixIndex]] = s;
                 start[radixIndex] += 1;
             }
-            index += 1;
             System.arraycopy(hold, 0, sorted, 0, length);
+            lsdPointer -= 1;
         }
         return sorted;
     }
