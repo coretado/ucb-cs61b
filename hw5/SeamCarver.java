@@ -1,6 +1,6 @@
 import edu.princeton.cs.algs4.Picture;
 
-import java.awt.*;
+import java.awt.Color;
 
 public class SeamCarver {
     private final Picture picture;
@@ -119,12 +119,14 @@ public class SeamCarver {
 
             for (int row = 1; row < this.height; row += 1) {
                 int prevCol = store[row - 1];
-                double bottomLeft = prevCol - 1 < 0 ? Double.POSITIVE_INFINITY : energies[row][prevCol - 1];
+                double bottomLeft = prevCol - 1 < 0
+                        ? Double.POSITIVE_INFINITY : energies[row][prevCol - 1];
                 double bottom = energies[row][prevCol];
-                double bottomRight = prevCol + 1 == this.width ? Double.POSITIVE_INFINITY : energies[row][prevCol + 1];
+                double bottomRight = prevCol + 1 == this.width
+                        ? Double.POSITIVE_INFINITY : energies[row][prevCol + 1];
                 double smallest = Math.min(Math.min(bottomLeft, bottom), bottomRight);
-                // is left is smaller, go left, if right is smaller, go right, otherwise default to center
-                store[row] = bottomLeft == smallest ? prevCol - 1 : bottomRight == smallest ? prevCol + 1 : prevCol;
+                store[row] = bottomLeft == smallest
+                        ? prevCol - 1 : bottomRight == smallest ? prevCol + 1 : prevCol;
                 storeEnergy += smallest;
             }
 
