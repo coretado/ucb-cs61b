@@ -7,7 +7,7 @@ public class SeamCarver {
     private int width;
     private int height;
     private boolean transposed;
-    Color[][] colors;
+    private Color[][] colors;
 
     public SeamCarver(Picture picture) {
         this.picture = picture;
@@ -23,7 +23,13 @@ public class SeamCarver {
     }
 
     public Picture picture() {
-        return this.picture;
+        Picture res = new Picture(this.width, this.height);
+        for (int row = 0; row < this.height; row += 1) {
+            for (int col = 0; col < this.width; col += 1) {
+                picture.set(col, row, colors[row][col]);
+            }
+        }
+        return res;
     }
 
     public int width() {
