@@ -6,11 +6,18 @@ public class SeamCarver {
     private Picture picture;
     private int width;
     private int height;
+    Color[][] colors;
 
     public SeamCarver(Picture picture) {
         this.picture = picture;
         this.width = picture.width();
         this.height = picture.height();
+        this.colors = new Color[this.height][this.width];
+        for (int row = 0; row < this.height; row += 1) {
+            for (int col = 0; col < this.width; col += 1) {
+                colors[row][col] = picture.get(col, row);
+            }
+        }
     }
 
     public Picture picture() {
@@ -43,12 +50,11 @@ public class SeamCarver {
     private Color fetchColor(int x, int y) {
         int col = x >= this.width ? x % this.width : x < 0 ? this.width - 1 : x;
         int row = y >= this.height ? y % this.height : y < 0 ? this.height - 1 : y;
-        return this.picture.get(col, row);
+        return this.colors[row][col];
     }
 
     public int[] findHorizontalSeam() {
-        int[] todo = new int[1];
-        return todo;
+        return new int[1];
     }
 
     public int[] findVerticalSeam() {
