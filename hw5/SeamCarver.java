@@ -9,6 +9,8 @@ public class SeamCarver {
 
     public SeamCarver(Picture picture) {
         this.picture = picture;
+        this.width = picture.width();
+        this.height = picture.height();
     }
 
     public Picture picture() {
@@ -39,8 +41,8 @@ public class SeamCarver {
     }
 
     private Color fetchColor(int x, int y) {
-        int col = x > this.width ? x % this.width : x < 0 ? this.width - 1 : x;
-        int row = y > this.height ? y % this.height : y < 0 ? this.height - 1 : y;
+        int col = x >= this.width ? x % this.width : x < 0 ? this.width - 1 : x;
+        int row = y >= this.height ? y % this.height : y < 0 ? this.height - 1 : y;
         return this.picture.get(col, row);
     }
 
@@ -50,8 +52,40 @@ public class SeamCarver {
     }
 
     public int[] findVerticalSeam() {
-        int[] todo = new int[1];
-        return todo;
+        double[][] energies = new double[this.height][this.width];
+
+        for (int row = 0; row < this.height; row += 1) {
+            for (int col = 0; col < this.width; col += 1) {
+                energies[row][col] = this.energy(col, row);
+            }
+        }
+
+        int[] path = new int[this.height];
+        double pathEnergy = Double.POSITIVE_INFINITY;
+
+        for (int col = 0; col < this.width; col += 1) {
+            int[] store = new int[this.height];
+            double storeEnergy = energies[0][col];
+            store[0] = col;
+
+            for (int row = 1; row < this.height; row += 1) {
+                int prevCol = store[row - 1];
+                double bottomLeft = prevCol - 1 < 0 ? Double.POSITIVE_INFINITY : energies[row][prevCol - 1];
+                double bottom = energies[row][prevCol];
+                double bottomRight = prevCol + 1 == this.width ? Double.POSITIVE_INFINITY : energies[row][prevCol + 1];
+                double smallest = Math.min(Math.min(bottomLeft, bottom), bottomRight);
+                // is left is smaller, go left, if right is smaller, go right, otherwise default to center
+                store[row] = bottomLeft == smallest ? prevCol - 1 : bottomRight == smallest ? prevCol + 1 : prevCol;
+                storeEnergy += smallest;
+            }
+
+            if (storeEnergy < pathEnergy) {
+                pathEnergy = storeEnergy;
+                path = store;
+            }
+        }
+
+        return path;
     }
 
     public void removeHorizontalSeam(int[] seam) {
