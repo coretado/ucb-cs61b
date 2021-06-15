@@ -3,9 +3,10 @@ import edu.princeton.cs.algs4.Picture;
 import java.awt.*;
 
 public class SeamCarver {
-    private Picture picture;
+    private final Picture picture;
     private int width;
     private int height;
+    private boolean transposed;
     Color[][] colors;
 
     public SeamCarver(Picture picture) {
@@ -13,6 +14,7 @@ public class SeamCarver {
         this.width = picture.width();
         this.height = picture.height();
         this.colors = new Color[this.height][this.width];
+        this.transposed = false;
         for (int row = 0; row < this.height; row += 1) {
             for (int col = 0; col < this.width; col += 1) {
                 colors[row][col] = picture.get(col, row);
@@ -54,7 +56,48 @@ public class SeamCarver {
     }
 
     public int[] findHorizontalSeam() {
-        return new int[1];
+        this.transposeColors();
+        int[] seam = this.findVerticalSeam();
+        this.transposeColors();
+        return seam;
+    }
+
+    private void transposeColors() {
+        if (!transposed) {
+            this.swapDimensions();
+            Color[][] flip = new Color[this.height][this.width];
+            for (int row = 0; row < this.height; row += 1) {
+                for (int col = 0; col < this.width; col += 1) {
+                    flip[row][col] = this.colors[col][row];
+                }
+            }
+            this.setColors(flip);
+            this.flipTransposed();
+        } else {
+            this.swapDimensions();
+            Color[][] flip = new Color[this.height][this.width];
+            for (int row = 0; row < this.height; row += 1) {
+                for (int col = 0; col < this.width; col += 1) {
+                    flip[row][col] = this.colors[col][row];
+                }
+            }
+            this.setColors(flip);
+            this.flipTransposed();
+        }
+    }
+
+    private void setColors(Color[][] colours) {
+        this.colors = colours;
+    }
+
+    private void swapDimensions() {
+        int hold = this.height;
+        this.height = this.width;
+        this.width = hold;
+    }
+
+    private void flipTransposed() {
+        this.transposed = !this.transposed;
     }
 
     public int[] findVerticalSeam() {
@@ -94,11 +137,28 @@ public class SeamCarver {
         return path;
     }
 
+    private void checkContiguousPath(int[] seam) {
+        for (int i = 1; i < seam.length; i += 1) {
+            int store = Math.abs(seam[i - 1] - seam[i]);
+            if (store < -1 || store > 1) {
+                throw new IllegalArgumentException("Seam is not contiguous");
+            }
+        }
+    }
+
     public void removeHorizontalSeam(int[] seam) {
+        if (seam.length != this.width) {
+            throw new IllegalArgumentException("Seam is not correct length");
+        }
+        this.checkContiguousPath(seam);
         SeamRemover.removeHorizontalSeam(this.picture, seam);
     }
 
     public void removeVerticalSeam(int[] seam) {
+        if (seam.length != this.height) {
+            throw new IllegalArgumentException("Seam is not correct length");
+        }
+        this.checkContiguousPath(seam);
         SeamRemover.removeVerticalSeam(this.picture, seam);
     }
 }
