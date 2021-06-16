@@ -26,7 +26,7 @@ public class SeamCarver {
         Picture res = new Picture(this.width, this.height);
         for (int row = 0; row < this.height; row += 1) {
             for (int col = 0; col < this.width; col += 1) {
-                picture.set(col, row, colors[row][col]);
+                res.set(col, row, colors[row][col]);
             }
         }
         return res;
@@ -115,34 +115,92 @@ public class SeamCarver {
             }
         }
 
-        int[] path = new int[this.height];
-        double pathEnergy = Double.POSITIVE_INFINITY;
+        double[][] relaxed = this.relaxEdges(energies);
 
+        int[] res = new int[this.height];
+        double resEnergy = Double.POSITIVE_INFINITY;
+
+        // bottom-up
         for (int col = 0; col < this.width; col += 1) {
-            int[] store = new int[this.height];
-            double storeEnergy = energies[0][col];
-            store[0] = col;
+            // no need to check path if end energy is worse than what's found
+            double pathFinalEnergy = relaxed[this.height - 1][col];
 
-            for (int row = 1; row < this.height; row += 1) {
-                int prevCol = store[row - 1];
-                double bottomLeft = prevCol - 1 < 0
-                        ? Double.POSITIVE_INFINITY : energies[row][prevCol - 1];
-                double bottom = energies[row][prevCol];
-                double bottomRight = prevCol + 1 == this.width
-                        ? Double.POSITIVE_INFINITY : energies[row][prevCol + 1];
-                double smallest = Math.min(Math.min(bottomLeft, bottom), bottomRight);
-                store[row] = bottomLeft == smallest
-                        ? prevCol - 1 : bottomRight == smallest ? prevCol + 1 : prevCol;
-                storeEnergy += smallest;
-            }
+            if (pathFinalEnergy < resEnergy) {
+                resEnergy = pathFinalEnergy;
+                int colPointer = col;
 
-            if (storeEnergy < pathEnergy) {
-                pathEnergy = storeEnergy;
-                path = store;
+                for (int row = this.height - 1; row >= 0; row -= 1) {
+                    if (row == this.height - 1) {
+                        res[row] = colPointer;
+                        continue;
+                    }
+
+                    int reset = colPointer;
+                    double tri = Double.POSITIVE_INFINITY;
+                    if (colPointer - 1 > 0) {
+                        if (relaxed[row][colPointer - 1] < tri) {
+                            tri = relaxed[row][colPointer - 1];
+                            res[row] = colPointer - 1;
+                            colPointer -= 1;
+                        }
+                    }
+                    if (colPointer + 1 < this.width) {
+                        if (relaxed[row][colPointer + 1] < tri) {
+                            tri = relaxed[row][colPointer + 1];
+                            res[row] = colPointer + 1;
+                            colPointer += 1;
+                        }
+                    }
+                    if (relaxed[row][colPointer] < tri) {
+                        colPointer = reset;
+                        res[row] = colPointer;
+                    }
+                }
             }
         }
 
-        return path;
+        return res;
+    }
+
+    private double[][] relaxEdges(double[][] energies) {
+        double[][] relaxed = new double[this.height][this.width];
+
+        for (int row = 0; row < this.height; row += 1) {
+            for (int col = 0; col < this.width; col += 1) {
+                relaxed[row][col] = energies[row][col];
+                if (row == 0) {
+                    relaxed[row][col] = energies[row][col];
+                } else {
+                    relaxed[row][col] = Double.POSITIVE_INFINITY;
+                }
+            }
+        }
+
+        for (int row = 1; row < this.height; row += 1) {
+            for (int col = 0; col < this.width; col += 1) {
+
+                if (col - 1 >= 0) {
+                    double energy = relaxed[row - 1][col - 1] + energies[row][col];
+                    if (energy < relaxed[row][col]) {
+                        relaxed[row][col] = energy;
+                    }
+                }
+
+                if (col + 1 < this.width) {
+                    double energy = relaxed[row - 1][col + 1] + energies[row][col];
+                    if (energy < relaxed[row][col]) {
+                        relaxed[row][col] = energy;
+                    }
+                }
+
+                double energy = relaxed[row - 1][col] + energies[row][col];
+                if (energy < relaxed[row][col]) {
+                    relaxed[row][col] = energy;
+                }
+            }
+        }
+
+        return relaxed;
     }
 
     private void checkContiguousPath(int[] seam) {
