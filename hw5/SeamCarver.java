@@ -135,26 +135,27 @@ public class SeamCarver {
                         continue;
                     }
 
-                    int reset = colPointer;
+                    int delta = 0;
                     double tri = Double.POSITIVE_INFINITY;
-                    if (colPointer - 1 > 0) {
+                    if (colPointer - 1 > -1) {
                         if (relaxed[row][colPointer - 1] < tri) {
                             tri = relaxed[row][colPointer - 1];
                             res[row] = colPointer - 1;
-                            colPointer -= 1;
+                            delta = -1;
                         }
                     }
                     if (colPointer + 1 < this.width) {
                         if (relaxed[row][colPointer + 1] < tri) {
                             tri = relaxed[row][colPointer + 1];
                             res[row] = colPointer + 1;
-                            colPointer += 1;
+                            delta = 1;
                         }
                     }
                     if (relaxed[row][colPointer] < tri) {
-                        colPointer = reset;
                         res[row] = colPointer;
+                        delta = 0;
                     }
+                    colPointer += delta;
                 }
             }
         }
